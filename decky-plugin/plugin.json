@@ -1,0 +1,7 @@
+{
+  "name": "Hermes Assistant",
+  "author": "khaoticdev62",
+  "flags": ["root"],
+  "description": "AI Assistant for SteamOS Gaming Mode — Quick prompt overlay, ProtonDB fixes, and battery telemetry.",
+  "version": "1.0.0"
+}

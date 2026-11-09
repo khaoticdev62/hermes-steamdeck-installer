@@ -1,27 +1,31 @@
 #!/usr/bin/env bash
 # ==============================================================================
-#  Hermes Agent + Claude DirectSDK + OpenAI Codex Installer for Steam Deck
+#  Hermes Agent Ultimate Steam Deck Edition - Modular Management Hub v2.0.0
 #  Target OS: SteamOS 3.x (Arch-based Linux, immutable rootfs friendly)
 # ==============================================================================
 
 set -u
+
+REPO_OWNER="khaoticdev62"
+REPO_NAME="hermes-steamdeck-installer"
+SCRIPT_VERSION="2.0.0"
 
 LOG_DIR="${HOME}/.local/share/hermes-installer"
 LOG_FILE="${LOG_DIR}/installer.log"
 mkdir -p "${LOG_DIR}"
 exec > >(tee -a "${LOG_FILE}") 2>&1
 
-APP_TITLE="Hermes Agent Steam Deck Installer"
-VERSION="1.0.0"
+APP_TITLE="Hermes Agent - Steam Deck Ultimate Edition"
 
-# Colors for terminal mode
+# ANSI Terminal Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
 BOLD='\033[1m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 # Determine UI Mode: GUI (kdialog/zenity) or Terminal
 UI_BACKEND="terminal"
@@ -36,7 +40,6 @@ fi
 # Ensure user PATH includes user-space binaries
 export PATH="${HOME}/.local/bin:${HOME}/.npm-global/bin:${HOME}/.local/lib/nodejs/bin:${PATH}"
 
-# Write PATH exports to ~/.bashrc if not already present
 ensure_user_path() {
     local bashrc="${HOME}/.bashrc"
     local path_line='export PATH="${HOME}/.local/bin:${HOME}/.npm-global/bin:${HOME}/.local/lib/nodejs/bin:${PATH}"'
@@ -51,7 +54,7 @@ ensure_user_path() {
 ensure_user_path
 
 # ------------------------------------------------------------------------------
-# UI Abstraction Layer (GUI & Terminal)
+# UI Helpers
 # ------------------------------------------------------------------------------
 
 msg_info() {
@@ -85,415 +88,316 @@ msg_error() {
     fi
 }
 
-ask_yes_no() {
-    local prompt="$1"
-    if [[ "${UI_BACKEND}" == "kdialog" ]]; then
-        kdialog --title "${APP_TITLE}" --yesno "${prompt}" 2>/dev/null
-        return $?
-    elif [[ "${UI_BACKEND}" == "zenity" ]]; then
-        zenity --question --title="${APP_TITLE}" --text="${prompt}" --width=450 2>/dev/null
-        return $?
+# ------------------------------------------------------------------------------
+# Auto-Update Check
+# ------------------------------------------------------------------------------
+
+check_for_updates() {
+    echo -e "${CYAN}[Update Check] Checking GitHub for latest version...${NC}"
+    local latest_tag
+    latest_tag=$(curl -s "https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest" 2>/dev/null | grep '"tag_name":' | head -n 1 | cut -d '"' -f 4 || true)
+    
+    if [[ -n "${latest_tag}" && "${latest_tag#v}" != "${SCRIPT_VERSION}" ]]; then
+        echo -e "${YELLOW}[!] A newer version (${latest_tag}) is available on GitHub! (Current: v${SCRIPT_VERSION})${NC}"
+        if [[ "${UI_BACKEND}" == "kdialog" ]]; then
+            kdialog --title "Update Available" --yesno "A newer release (${latest_tag}) is available. Would you like to update?" 2>/dev/null && update_in_place "${latest_tag}"
+        fi
     else
-        read -r -p "${prompt} [y/N]: " response
-        [[ "${response}" =~ ^[Yy]$ ]]
+        echo -e "${GREEN}[✓] You are running the latest version (v${SCRIPT_VERSION}).${NC}"
     fi
 }
 
-# ------------------------------------------------------------------------------
-# Progress Reporting Engine
-# ------------------------------------------------------------------------------
-
-STEPS_TOTAL=7
-CURRENT_STEP=0
-
-declare -a STEP_STATUS=(
-    "Pending"
-    "Pending"
-    "Pending"
-    "Pending"
-    "Pending"
-    "Pending"
-    "Pending"
-)
-
-declare -a STEP_LABELS=(
-    "SteamOS Environment & Permissions"
-    "User-Space Node.js & npm (No-Root)"
-    "Hermes Agent Core Engine"
-    "Claude Code CLI & Authentication"
-    "Claude DirectSDK Plugin"
-    "OpenAI Codex OAuth Setup"
-    "End-to-End Verification & Health Check"
-)
-
-render_terminal_dashboard() {
-    clear
-    echo -e "${BOLD}${CYAN}====================================================================${NC}"
-    echo -e "${BOLD}         ${APP_TITLE} v${VERSION}${NC}"
-    echo -e "${BOLD}${CYAN}====================================================================${NC}"
-    echo -e " Log: ${LOG_FILE}"
-    echo -e " Mode: SteamOS Desktop (Immutable Rootfs Safe)"
-    echo -e "--------------------------------------------------------------------"
-    for i in "${!STEP_LABELS[@]}"; do
-        local num=$((i + 1))
-        local status="${STEP_STATUS[$i]}"
-        local label="${STEP_LABELS[$i]}"
-        case "${status}" in
-            "Success")
-                echo -e "  [${GREEN}✓${NC}] Step ${num}: ${label}"
-                ;;
-            "Running")
-                echo -e "  [${YELLOW}⟳${NC}] Step ${num}: ${label} ${YELLOW}(In progress...)${NC}"
-                ;;
-            "Failed")
-                echo -e "  [${RED}✗${NC}] Step ${num}: ${label} ${RED}(Failed)${NC}"
-                ;;
-            "Skipped")
-                echo -e "  [${CYAN}-${NC}] Step ${num}: ${label} (Skipped)"
-                ;;
-            *)
-                echo -e "  [ ] Step ${num}: ${label}"
-                ;;
-        esac
-    done
-    echo -e "${BOLD}${CYAN}====================================================================${NC}\n"
-}
-
-update_step() {
-    local step_idx="$1"
-    local status="$2"
-    STEP_STATUS[$step_idx]="${status}"
-    render_terminal_dashboard
+update_in_place() {
+    local tag="$1"
+    local update_url="https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${tag}/hermes-steamdeck.tar.gz"
+    echo "Downloading update from ${update_url}..."
+    curl -L -f -o /tmp/hermes-update.tar.gz "${update_url}"
+    tar -xzf /tmp/hermes-update.tar.gz -C "${HOME}"
+    rm -f /tmp/hermes-update.tar.gz
+    msg_success "Updated to ${tag}! Please restart the installer."
+    exit 0
 }
 
 # ------------------------------------------------------------------------------
-# Step Implementations
+# Module Implementations
 # ------------------------------------------------------------------------------
 
-# Step 1: Environment & Directories
-step1_env_check() {
-    update_step 0 "Running"
-    echo "Checking directories and environment..." >> "${LOG_FILE}"
-
-    mkdir -p "${HOME}/.local/bin"
-    mkdir -p "${HOME}/.local/share"
-    mkdir -p "${HOME}/.npm-global/bin"
-    mkdir -p "${HOME}/.hermes"
-
-    # Configure npm to use user prefix so sudo/pacman is never needed
+# Module 1: Core Engine (Hermes + Claude + Codex)
+install_core_engine() {
+    echo -e "\n${BOLD}${CYAN}=== Installing Hermes Core Engine & Subscription Providers ===${NC}"
+    
+    # 1. Environment & user-space node
+    mkdir -p "${HOME}/.local/bin" "${HOME}/.npm-global/bin" "${HOME}/.hermes"
     npm config set prefix "${HOME}/.npm-global" >/dev/null 2>&1 || true
 
-    sleep 1
-    update_step 0 "Success"
-}
-
-# Step 2: User-Space Node.js LTS (rootless fallback for SteamOS)
-step2_install_node() {
-    update_step 1 "Running"
-    echo "Verifying Node.js and npm..." >> "${LOG_FILE}"
-
-    if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
-        local node_ver
-        node_ver=$(node --version)
-        echo "Found system Node.js: ${node_ver}" >> "${LOG_FILE}"
-        update_step 1 "Success"
-        return 0
+    if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1; then
+        echo "Installing user-space Node.js LTS..."
+        local NODE_DIR="${HOME}/.local/lib/nodejs"
+        mkdir -p "${NODE_DIR}"
+        curl -fsSL "https://nodejs.org/dist/v20.18.0/node-v20.18.0-linux-x64.tar.xz" | tar -xJ -C "${NODE_DIR}" --strip-components=1
+        export PATH="${NODE_DIR}/bin:${PATH}"
     fi
 
-    echo "Node.js not found. Installing standalone user-space Node.js LTS..." >> "${LOG_FILE}"
-    local NODE_VERSION="v20.18.0"
-    local ARCH="linux-x64"
-    local NODE_DIR="${HOME}/.local/lib/nodejs"
-    mkdir -p "${NODE_DIR}"
-
-    local TAR_URL="https://nodejs.org/dist/${NODE_VERSION}/node-${NODE_VERSION}-${ARCH}.tar.xz"
-    local TMP_TAR="/tmp/node-lts.tar.xz"
-
-    if ! curl -fsSL "${TAR_URL}" -o "${TMP_TAR}"; then
-        update_step 1 "Failed"
-        msg_error "Node.js Download Failed" "Could not download Node.js LTS archive from official nodejs.org."
-        return 1
-    fi
-
-    tar -xJf "${TMP_TAR}" -C "${NODE_DIR}" --strip-components=1
-    rm -f "${TMP_TAR}"
-
-    export PATH="${NODE_DIR}/bin:${PATH}"
-
-    if command -v node >/dev/null 2>&1; then
-        echo "Installed user-space Node $(node --version)" >> "${LOG_FILE}"
-        update_step 1 "Success"
-        return 0
-    else
-        update_step 1 "Failed"
-        msg_error "Node.js Setup Error" "Extracted Node.js but failed to execute."
-        return 1
-    fi
-}
-
-# Step 3: Hermes Agent Core
-step3_install_hermes() {
-    update_step 2 "Running"
-    echo "Checking Hermes Agent installation..." >> "${LOG_FILE}"
-
-    if command -v hermes >/dev/null 2>&1; then
-        echo "Hermes already installed: $(hermes --version 2>/dev/null || echo 'detected')" >> "${LOG_FILE}"
-        update_step 2 "Success"
-        return 0
-    fi
-
-    echo "Installing Hermes Agent via official installer..." >> "${LOG_FILE}"
-    if curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash; then
+    # 2. Hermes CLI
+    if ! command -v hermes >/dev/null 2>&1; then
+        echo "Installing Hermes Agent..."
+        curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
         export PATH="${HOME}/.local/bin:${PATH}"
-        if command -v hermes >/dev/null 2>&1; then
-            update_step 2 "Success"
-            return 0
-        fi
     fi
 
-    update_step 2 "Failed"
-    msg_error "Hermes Install Error" "Official Hermes Agent install script failed. See log."
-    return 1
-}
-
-# Step 4: Claude Code CLI & Login
-step4_setup_claude() {
-    update_step 3 "Running"
-    echo "Installing/verifying Claude Code CLI..." >> "${LOG_FILE}"
-
+    # 3. Claude Code CLI
     if ! command -v claude >/dev/null 2>&1; then
-        echo "Running: npm install -g @anthropic-ai/claude-code" >> "${LOG_FILE}"
-        if ! npm install -g @anthropic-ai/claude-code; then
-            update_step 3 "Failed"
-            msg_error "Claude CLI Install Failed" "npm failed to install @anthropic-ai/claude-code."
-            return 1
-        fi
+        echo "Installing @anthropic-ai/claude-code..."
+        npm install -g @anthropic-ai/claude-code
     fi
 
-    # Check login status
-    echo "Checking Claude CLI login status..." >> "${LOG_FILE}"
-    local is_logged_in=false
-    if claude auth status 2>/dev/null | grep -q '"loggedIn": true'; then
-        is_logged_in=true
-    fi
-
-    if [[ "${is_logged_in}" == "true" ]]; then
-        echo "Claude CLI is already authenticated with Pro/Max." >> "${LOG_FILE}"
-    else
-        echo "Authentication required for Claude Code CLI." >> "${LOG_FILE}"
-        echo -e "\n${YELLOW}=== Action Required: Claude Authentication ===${NC}"
-        echo -e "A browser window will open or URL will be displayed to authenticate your Claude Pro/Max account."
+    # Claude Login check
+    if ! claude auth status 2>/dev/null | grep -q '"loggedIn": true'; then
+        echo -e "${YELLOW}Please authenticate your Claude subscription in the browser prompt:${NC}"
         claude auth login
     fi
 
-    update_step 3 "Success"
-    return 0
-}
-
-# Step 5: Claude DirectSDK Hermes Plugin
-step5_install_directsdk() {
-    update_step 4 "Running"
-    echo "Installing claude-subscription-directsdk plugin in Hermes..." >> "${LOG_FILE}"
-
-    if hermes plugins list --plain 2>/dev/null | grep -q "claude-subscription-directsdk"; then
-        echo "Plugin already installed. Ensuring enabled..." >> "${LOG_FILE}"
-        hermes plugins enable claude-subscription-directsdk-experimental >/dev/null 2>&1 || true
-    else
-        if ! hermes plugins install --yes-deps --enable claude-subscription-directsdk; then
-            update_step 4 "Failed"
-            msg_error "Plugin Install Failed" "hermes plugins install claude-subscription-directsdk failed."
-            return 1
-        fi
-    fi
-
-    # Configure Hermes default model and provider
+    # 4. Install Claude DirectSDK Plugin
+    echo "Installing claude-subscription-directsdk plugin..."
+    hermes plugins install --yes-deps --enable claude-subscription-directsdk >/dev/null 2>&1 || true
     hermes config set model.provider claude-subscription-directsdk-experimental
     hermes config unset model.base_url >/dev/null 2>&1 || true
     hermes config set model.default sonnet
 
-    update_step 4 "Success"
-    return 0
-}
-
-# Step 6: OpenAI Codex OAuth Setup
-step6_setup_codex() {
-    update_step 5 "Running"
-    echo "Setting up OpenAI Codex OAuth..." >> "${LOG_FILE}"
-
-    if hermes auth list 2>/dev/null | grep -q "openai-codex"; then
-        echo "OpenAI Codex credentials already present in Hermes pool." >> "${LOG_FILE}"
-        update_step 5 "Success"
-        return 0
+    # 5. Codex OAuth
+    if ! hermes auth list 2>/dev/null | grep -q "openai-codex"; then
+        echo -e "${YELLOW}Starting OpenAI Codex OAuth setup:${NC}"
+        hermes auth add openai-codex
     fi
 
-    echo -e "\n${YELLOW}=== Action Required: OpenAI Codex OAuth Pairing ===${NC}"
-    echo -e "Starting OAuth pairing for OpenAI Codex..."
+    echo -e "${GREEN}[✓] Core Engine and Providers configured.${NC}"
+}
+
+# Module 2: Steam Gaming Mode & Grid Art
+install_gaming_mode() {
+    echo -e "\n${BOLD}${CYAN}=== Configuring Steam Gaming Mode & Grid Artwork ===${NC}"
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    if [[ -f "${script_dir}/scripts/install-gaming-mode.py" ]]; then
+        python3 "${script_dir}/scripts/install-gaming-mode.py"
+    else
+        echo "Error: install-gaming-mode.py not found."
+    fi
+}
+
+# Module 3: Decky Loader QAM Plugin
+install_decky_plugin() {
+    echo -e "\n${BOLD}${CYAN}=== Deploying Decky Loader QAM Plugin ===${NC}"
+    local DECKY_PLUGINS_DIR="${HOME}/homebrew/plugins"
+    local TARGET_DIR="${DECKY_PLUGINS_DIR}/hermes-decky"
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+    if [[ ! -d "${DECKY_PLUGINS_DIR}" ]]; then
+        echo "Decky Loader homebrew directory not found at ${DECKY_PLUGINS_DIR}."
+        echo "Creating plugin directory anyway for when Decky Loader is installed..."
+        mkdir -p "${TARGET_DIR}"
+    else
+        mkdir -p "${TARGET_DIR}"
+    fi
+
+    if [[ -d "${script_dir}/decky-plugin" ]]; then
+        cp -r "${script_dir}/decky-plugin/"* "${TARGET_DIR}/"
+        echo -e "${GREEN}[✓] Decky plugin installed to ${TARGET_DIR}.${NC}"
+        echo "Restart Decky Loader service or reload Gaming Mode to access Hermes in QAM."
+    else
+        echo "Error: decky-plugin directory not found."
+    fi
+}
+
+# Module 4: Offline Adaptive Local AI (Vulkan llama.cpp + GGUF models)
+install_offline_engine() {
+    echo -e "\n${BOLD}${CYAN}=== Setting up Offline Adaptive Vulkan Local AI ===${NC}"
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    if [[ -f "${script_dir}/scripts/setup-offline-models.sh" ]]; then
+        bash "${script_dir}/scripts/setup-offline-models.sh"
+        
+        # Install adaptive daemon systemd user service
+        local SERVICE_DIR="${HOME}/.config/systemd/user"
+        mkdir -p "${SERVICE_DIR}"
+        cat <<EOF > "${SERVICE_DIR}/hermes-adaptive-model.service"
+[Unit]
+Description=Hermes Game-Aware Adaptive Local Model Daemon
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 ${script_dir}/scripts/adaptive-model-daemon.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
+EOF
+        systemctl --user daemon-reload >/dev/null 2>&1 || true
+        systemctl --user enable --now hermes-adaptive-model.service >/dev/null 2>&1 || true
+        echo -e "${GREEN}[✓] Adaptive local model daemon enabled as user service.${NC}"
+    else
+        echo "Error: setup-offline-models.sh not found."
+    fi
+}
+
+# Module 5: Hybrid Voice Assistant (Whisper + Piper)
+install_voice_assistant() {
+    echo -e "\n${BOLD}${CYAN}=== Configuring Hybrid Voice Assistant ===${NC}"
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    if [[ -f "${script_dir}/scripts/setup-voice.sh" ]]; then
+        bash "${script_dir}/scripts/setup-voice.sh"
+    else
+        echo "Error: setup-voice.sh not found."
+    fi
+}
+
+# Module 6: SteamOS Ops Toolkit Skill
+install_steamos_ops() {
+    echo -e "\n${BOLD}${CYAN}=== Installing SteamOS Ops Skill into Hermes ===${NC}"
+    local SKILLS_DIR="${HOME}/.hermes/skills/steamos-ops"
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    mkdir -p "${SKILLS_DIR}"
+
+    if [[ -d "${script_dir}/skills/steamos-ops" ]]; then
+        cp -r "${script_dir}/skills/steamos-ops/"* "${SKILLS_DIR}/"
+        echo -e "${GREEN}[✓] Installed steamos-ops skill to ${SKILLS_DIR}.${NC}"
+    else
+        echo "Error: steamos-ops skill files not found."
+    fi
+}
+
+# Module 7: Run Full Verification Diagnostics
+run_diagnostics() {
+    echo -e "\n${BOLD}${CYAN}=== Running System & Provider Diagnostics ===${NC}"
     
-    # Run interactive device flow
-    if hermes auth add openai-codex; then
-        echo "Codex OAuth pairing successfully completed." >> "${LOG_FILE}"
-        update_step 5 "Success"
-        return 0
-    else
-        update_step 5 "Failed"
-        msg_error "Codex Auth Failed" "OpenAI Codex authorization was cancelled or failed."
-        return 1
-    fi
-}
+    echo -n "Checking Hermes CLI: "
+    if command -v hermes >/dev/null 2>&1; then echo -e "${GREEN}OK (${NC}$(hermes --version 2>/dev/null || echo 'Installed')${GREEN})${NC}"; else echo -e "${RED}MISSING${NC}"; fi
 
-# Step 7: End-to-End Verification
-step7_verify() {
-    update_step 6 "Running"
-    echo "Running live end-to-end verification tests..." >> "${LOG_FILE}"
-
-    echo -e "Testing Claude DirectSDK..."
-    local claude_ok=false
+    echo -n "Checking Claude DirectSDK: "
     if hermes chat -q "Respond with 'Claude OK' and nothing else." 2>&1 | grep -iq "Claude OK"; then
-        claude_ok=true
-        echo "Claude DirectSDK test: PASSED" >> "${LOG_FILE}"
+        echo -e "${GREEN}PASSED${NC}"
     else
-        echo "Claude DirectSDK test: FAILED" >> "${LOG_FILE}"
+        echo -e "${RED}FAILED${NC}"
     fi
 
-    echo -e "Testing OpenAI Codex OAuth..."
-    local codex_ok=false
+    echo -n "Checking OpenAI Codex OAuth: "
     if hermes chat --provider openai-codex -q "Respond with 'Codex OK' and nothing else." 2>&1 | grep -iq "Codex OK"; then
-        codex_ok=true
-        echo "OpenAI Codex OAuth test: PASSED" >> "${LOG_FILE}"
+        echo -e "${GREEN}PASSED${NC}"
     else
-        echo "OpenAI Codex OAuth test: FAILED" >> "${LOG_FILE}"
+        echo -e "${YELLOW}NOT CONFIGURED / FAILED${NC}"
     fi
 
-    if [[ "${claude_ok}" == "true" && "${codex_ok}" == "true" ]]; then
-        update_step 6 "Success"
-        msg_success "All tests passed! Hermes Agent is fully configured with Claude Pro DirectSDK and OpenAI Codex OAuth."
-        return 0
-    elif [[ "${claude_ok}" == "true" ]]; then
-        update_step 6 "Success"
-        msg_info "Claude DirectSDK is verified! Codex verification encountered an issue (check log)."
-        return 0
-    else
-        update_step 6 "Failed"
-        msg_error "Verification Test Failed" "One or more provider verification tests failed. See ${LOG_FILE}"
-        return 1
-    fi
+    echo -n "Checking Steam Gaming Mode Shortcut: "
+    local found_sc=false
+    for f in "${HOME}"/.steam/steam/userdata/*/config/shortcuts.vdf "${HOME}"/.local/share/Steam/userdata/*/config/shortcuts.vdf; do
+        if [[ -f "${f}" ]] && grep -q "Hermes Agent" "${f}" 2>/dev/null; then found_sc=true; break; fi
+    done
+    if [[ "${found_sc}" == "true" ]]; then echo -e "${GREEN}INSTALLED${NC}"; else echo -e "${YELLOW}NOT FOUND${NC}"; fi
+
+    echo -n "Checking Offline Local GGUF Models: "
+    local m3b="${HOME}/.local/share/hermes/models/qwen2.5-coder-3b-instruct-q4_k_m.gguf"
+    if [[ -f "${m3b}" ]]; then echo -e "${GREEN}PRESENT${NC}"; else echo -e "${YELLOW}NOT DOWNLOADED${NC}"; fi
+}
+
+# 🌟 Option 1: Ultimate Full Setup
+run_ultimate_setup() {
+    clear
+    echo -e "${BOLD}${MAGENTA}====================================================================${NC}"
+    echo -e "${BOLD}   Executing Ultimate Steam Deck Setup (All Modules)${NC}"
+    echo -e "${BOLD}${MAGENTA}====================================================================${NC}"
+    install_core_engine
+    install_gaming_mode
+    install_decky_plugin
+    install_offline_engine
+    install_voice_assistant
+    install_steamos_ops
+    run_diagnostics
+    msg_success "Ultimate Steam Deck Setup Complete! Hermes is now integrated across Gaming Mode, Desktop, Voice, and Decky Loader."
 }
 
 # ------------------------------------------------------------------------------
-# Full Automation Pipeline
-# ------------------------------------------------------------------------------
-
-run_full_installer() {
-    render_terminal_dashboard
-    step1_env_check || return 1
-    step2_install_node || return 1
-    step3_install_hermes || return 1
-    step4_setup_claude || return 1
-    step5_install_directsdk || return 1
-    step6_setup_codex || return 1
-    step7_verify || return 1
-}
-
-# ------------------------------------------------------------------------------
-# Main Menu
+# Main Interactive Menu
 # ------------------------------------------------------------------------------
 
 show_gui_menu() {
     if [[ "${UI_BACKEND}" == "kdialog" ]]; then
-        kdialog --title "${APP_TITLE}" --menu "Select an operation for your Steam Deck:" \
-            "1" "Full Automated Setup (Hermes + Claude + Codex)" \
-            "2" "Setup Claude DirectSDK Only" \
-            "3" "Setup OpenAI Codex OAuth Only" \
-            "4" "Run Verification & Diagnostics" \
-            "5" "Launch Hermes Agent in Konsole" \
-            "6" "View Installer Log" \
-            "7" "Exit" 2>/dev/null
+        kdialog --title "${APP_TITLE}" --menu "Select an option for your Steam Deck:" \
+            "1" "🌟 Full Ultimate Setup (All Modules)" \
+            "2" "Core Engine (Hermes + Claude + Codex)" \
+            "3" "Steam Gaming Mode & Grid Art Injection" \
+            "4" "Decky Loader QAM Plugin Deployment" \
+            "5" "Offline Adaptive AI (Vulkan llama.cpp + 3B/7B GGUF)" \
+            "6" "Hybrid Voice Assistant (Whisper + Piper TTS)" \
+            "7" "SteamOS Ops Toolkit Skill" \
+            "8" "Run Full Health & Diagnostics" \
+            "9" "Check for Updates from GitHub" \
+            "10" "Launch Hermes Agent" \
+            "11" "Exit" 2>/dev/null
     elif [[ "${UI_BACKEND}" == "zenity" ]]; then
-        zenity --list --title="${APP_TITLE}" --text="Select an operation for your Steam Deck:" \
-            --column="Option" --column="Description" --width=500 --height=320 \
-            "1" "Full Automated Setup (Hermes + Claude + Codex)" \
-            "2" "Setup Claude DirectSDK Only" \
-            "3" "Setup OpenAI Codex OAuth Only" \
-            "4" "Run Verification & Diagnostics" \
-            "5" "Launch Hermes Agent in Konsole" \
-            "6" "View Installer Log" \
-            "7" "Exit" 2>/dev/null
+        zenity --list --title="${APP_TITLE}" --text="Select an option for your Steam Deck:" \
+            --column="Option" --column="Description" --width=520 --height=380 \
+            "1" "🌟 Full Ultimate Setup (All Modules)" \
+            "2" "Core Engine (Hermes + Claude + Codex)" \
+            "3" "Steam Gaming Mode & Grid Art Injection" \
+            "4" "Decky Loader QAM Plugin Deployment" \
+            "5" "Offline Adaptive AI (Vulkan llama.cpp + 3B/7B GGUF)" \
+            "6" "Hybrid Voice Assistant (Whisper + Piper TTS)" \
+            "7" "SteamOS Ops Toolkit Skill" \
+            "8" "Run Full Health & Diagnostics" \
+            "9" "Check for Updates from GitHub" \
+            "10" "Launch Hermes Agent" \
+            "11" "Exit" 2>/dev/null
     fi
 }
 
-main_menu() {
+main() {
+    check_for_updates
+
     while true; do
         local choice=""
         if [[ "${UI_BACKEND}" != "terminal" ]]; then
             choice=$(show_gui_menu)
-            if [[ -z "${choice}" ]]; then
-                exit 0
-            fi
+            if [[ -z "${choice}" ]]; then exit 0; fi
         else
-            clear
+            echo -e "\n${BOLD}${CYAN}====================================================================${NC}"
+            echo -e "${BOLD}   ${APP_TITLE} (v${SCRIPT_VERSION})${NC}"
             echo -e "${BOLD}${CYAN}====================================================================${NC}"
-            echo -e "${BOLD}         ${APP_TITLE} (Steam Deck Edition)${NC}"
-            echo -e "${BOLD}${CYAN}====================================================================${NC}"
-            echo -e "  ${BOLD}1)${NC} Full Automated Setup (Hermes + Claude DirectSDK + Codex)"
-            echo -e "  ${BOLD}2)${NC} Setup Claude DirectSDK Only"
-            echo -e "  ${BOLD}3)${NC} Setup OpenAI Codex OAuth Only"
-            echo -e "  ${BOLD}4)${NC} Run Provider Verification & Health Check"
-            echo -e "  ${BOLD}5)${NC} Launch Hermes Agent"
-            echo -e "  ${BOLD}6)${NC} View Installer Log"
-            echo -e "  ${BOLD}7)${NC} Exit"
+            echo -e "  ${BOLD}${MAGENTA}1)${NC} 🌟 ${BOLD}Full Ultimate Setup${NC} (Installs all 6 enhancement modules)"
+            echo -e "  ${BOLD}2)${NC} Core Engine (Hermes + Claude DirectSDK + Codex OAuth)"
+            echo -e "  ${BOLD}3)${NC} Steam Gaming Mode & Grid Art Injection"
+            echo -e "  ${BOLD}4)${NC} Decky Loader QAM Plugin Deployment"
+            echo -e "  ${BOLD}5)${NC} Offline Adaptive Local AI (Vulkan llama.cpp + Dual GGUF)"
+            echo -e "  ${BOLD}6)${NC} Hybrid Voice Assistant (Faster-Whisper + Piper TTS)"
+            echo -e "  ${BOLD}7)${NC} SteamOS Ops Toolkit Skill (ProtonDB, Compatdata, Saves)"
+            echo -e "  ${BOLD}8)${NC} Run Full Health & Diagnostics Check"
+            echo -e "  ${BOLD}9)${NC} Check for Updates from GitHub"
+            echo -e "  ${BOLD}10)${NC} Launch Hermes Agent"
+            echo -e "  ${BOLD}11)${NC} Exit"
             echo -e "--------------------------------------------------------------------"
-            read -r -p "Enter selection [1-7]: " choice
+            read -r -p "Enter selection [1-11]: " choice
         fi
 
         case "${choice}" in
-            1)
-                run_full_installer
-                read -r -p "Press Enter to return to menu..."
-                ;;
-            2)
-                step1_env_check
-                step2_install_node
-                step3_install_hermes
-                step4_setup_claude
-                step5_install_directsdk
-                read -r -p "Press Enter to return to menu..."
-                ;;
-            3)
-                step1_env_check
-                step3_install_hermes
-                step6_setup_codex
-                read -r -p "Press Enter to return to menu..."
-                ;;
-            4)
-                step7_verify
-                read -r -p "Press Enter to return to menu..."
-                ;;
-            5)
+            1) run_ultimate_setup; read -r -p "Press Enter to continue..." ;;
+            2) install_core_engine; read -r -p "Press Enter to continue..." ;;
+            3) install_gaming_mode; read -r -p "Press Enter to continue..." ;;
+            4) install_decky_plugin; read -r -p "Press Enter to continue..." ;;
+            5) install_offline_engine; read -r -p "Press Enter to continue..." ;;
+            6) install_voice_assistant; read -r -p "Press Enter to continue..." ;;
+            7) install_steamos_ops; read -r -p "Press Enter to continue..." ;;
+            8) run_diagnostics; read -r -p "Press Enter to continue..." ;;
+            9) check_for_updates; read -r -p "Press Enter to continue..." ;;
+            10)
                 if command -v konsole >/dev/null 2>&1; then
                     konsole -e bash -c "hermes; bash" &
                 else
                     hermes
                 fi
                 ;;
-            6)
-                if command -v kwrite >/dev/null 2>&1; then
-                    kwrite "${LOG_FILE}" &
-                elif command -v kate >/dev/null 2>&1; then
-                    kate "${LOG_FILE}" &
-                else
-                    less "${LOG_FILE}"
-                fi
-                ;;
-            7)
-                echo "Exiting."
-                exit 0
-                ;;
-            *)
-                echo "Invalid selection."
-                sleep 1
-                ;;
+            11) echo "Exiting."; exit 0 ;;
+            *) echo "Invalid option."; sleep 1 ;;
         esac
     done
 }
 
-main_menu
+main

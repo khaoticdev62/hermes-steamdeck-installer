@@ -1,0 +1,15 @@
+{
+  "name": "hermes-decky",
+  "version": "1.0.0",
+  "description": "Hermes Agent Decky Loader Plugin",
+  "scripts": {
+    "build": "decky-frontend-lib build"
+  },
+  "dependencies": {
+    "@decky/ui": "^5.0.0"
+  },
+  "devDependencies": {
+    "@decky/frontend-lib": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}
