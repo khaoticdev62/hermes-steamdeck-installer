@@ -1,9 +1,9 @@
 [Desktop Entry]
-Name=Hermes Agent Setup
-Comment=Automated Setup for Hermes, Claude DirectSDK, and OpenAI Codex on Steam Deck
+Name=Hermes Agent Suite (v3.0.0 AAA)
+Comment=Automated Setup & Handheld Command Center for Steam Deck
 Exec=konsole -e bash -c "\"$HOME/install-hermes-steamdeck.sh\""
-Icon=utilities-terminal
+Icon=steamdeck-gaming-return
 Terminal=false
 Type=Application
-Categories=Development;System;
+Categories=Development;System;Game;
 StartupNotify=true

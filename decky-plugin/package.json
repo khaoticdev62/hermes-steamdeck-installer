@@ -1,7 +1,7 @@
 {
   "name": "hermes-decky",
-  "version": "2.3.0",
-  "description": "Handheld AI command center for SteamOS Gaming Mode",
+  "version": "3.0.0",
+  "description": "AAA Handheld AI command center for SteamOS Gaming Mode",
   "scripts": {
     "build": "decky-frontend-lib build"
   },

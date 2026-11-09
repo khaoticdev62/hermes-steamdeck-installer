@@ -5,7 +5,6 @@ import {
   TextField,
   ToggleField,
   DropdownItem,
-  ProgressBar,
   staticClasses,
   definePlugin,
   ServerAPI,
@@ -14,13 +13,13 @@ import { useState, useEffect, FC } from "react";
 import {
   FaRobot,
   FaGamepad,
+  FaMicrophone,
+  FaCheckCircle,
+  FaBolt,
+  FaSyncAlt,
   FaCode,
   FaCogs,
-  FaMicrophone,
-  FaBolt,
-  FaCheckCircle,
-  FaExclamationTriangle,
-  FaSyncAlt,
+  FaVolumeUp,
 } from "react-icons/fa";
 
 type TabKey = "chat" | "game_ops" | "dev" | "settings";
@@ -67,8 +66,90 @@ interface PluginSettings {
   voice_engine: string;
   auto_offline_fallback: boolean;
   stream_responses: boolean;
+  audio_sfx_enabled: boolean;
 }
 
+// -----------------------------------------------------------------------------
+// SteamOS Web Audio SFX Synthesizer (Authentic Valve UI Sound Cues)
+// -----------------------------------------------------------------------------
+class SteamAudioSynthesizer {
+  private ctx: AudioContext | null = null;
+  public enabled: boolean = true;
+
+  private initCtx() {
+    if (!this.ctx && typeof window !== "undefined") {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioCtx) this.ctx = new AudioCtx();
+    }
+  }
+
+  public playFocusBlip() {
+    if (!this.enabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "sine";
+      const now = this.ctx.currentTime;
+      osc.frequency.setValueAtTime(460, now);
+      osc.frequency.exponentialRampToValueAtTime(560, now + 0.04);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.045);
+    } catch (_) {}
+  }
+
+  public playClick() {
+    if (!this.enabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = "triangle";
+      const now = this.ctx.currentTime;
+      osc.frequency.setValueAtTime(820, now);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.04);
+    } catch (_) {}
+  }
+
+  public playSuccessChime() {
+    if (!this.enabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+      const notes = [523.25, 659.25, 783.99]; // C5, E5, G5 Major Triad
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx!.createOscillator();
+        const gain = this.ctx!.createGain();
+        osc.type = "sine";
+        const start = this.ctx!.currentTime + idx * 0.07;
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.15, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.18);
+        osc.connect(gain);
+        gain.connect(this.ctx!.destination);
+        osc.start(start);
+        osc.stop(start + 0.2);
+      });
+    } catch (_) {}
+  }
+}
+
+const steamAudio = new SteamAudioSynthesizer();
+
+// -----------------------------------------------------------------------------
+// Main Decky QAM Interface Component
+// -----------------------------------------------------------------------------
 const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
   const [activeTab, setActiveTab] = useState<TabKey>("chat");
 
@@ -115,9 +196,9 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
     voice_engine: "piper",
     auto_offline_fallback: true,
     stream_responses: true,
+    audio_sfx_enabled: true,
   });
 
-  // Load telemetry and active game on mount / tab change
   const refreshGameOps = async () => {
     setGameLoading(true);
     try {
@@ -154,7 +235,10 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
   const loadSettings = async () => {
     try {
       const sRes = await serverApi.callPluginMethod<{}, PluginSettings>("get_settings", {});
-      if (sRes.result) setSettings(sRes.result);
+      if (sRes.result) {
+        setSettings(sRes.result);
+        steamAudio.enabled = sRes.result.audio_sfx_enabled ?? true;
+      }
     } catch (e) {
       console.error("Failed to load settings:", e);
     }
@@ -168,8 +252,15 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Handlers
+  const handleTabSwitch = (tab: TabKey) => {
+    steamAudio.playFocusBlip();
+    setActiveTab(tab);
+    if (tab === "game_ops") refreshGameOps();
+    if (tab === "dev") refreshTelemetry();
+  };
+
   const handleSendChat = async (overridePrompt?: string) => {
+    steamAudio.playClick();
     const textToSend = overridePrompt || prompt;
     if (!textToSend.trim()) return;
     setLoading(true);
@@ -184,8 +275,8 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
       );
       const reply = res.result || "No response received.";
       setResponse(reply);
+      steamAudio.playSuccessChime();
 
-      // Toast notification when response finishes in background
       serverApi.toaster.toast({
         title: "Hermes Assistant",
         body: reply.length > 60 ? reply.substring(0, 57) + "..." : reply,
@@ -199,6 +290,7 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
 
   const handleApplyLaunchFlags = async () => {
     if (!protonFixes?.recommended_flags || !activeGame.app_id) return;
+    steamAudio.playClick();
     setGameLoading(true);
     try {
       const res = await serverApi.callPluginMethod<
@@ -209,6 +301,7 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
         flags: protonFixes.recommended_flags,
       });
       const msg = res.result?.message || "Launch options applied.";
+      steamAudio.playSuccessChime();
       serverApi.toaster.toast({
         title: "ProtonDB Auto-Fix",
         body: msg,
@@ -225,6 +318,7 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
   };
 
   const handleToggleCodeServer = async (enabled: boolean) => {
+    steamAudio.playClick();
     try {
       await serverApi.callPluginMethod<{ service_name: string; enable: boolean }, any>(
         "toggle_service",
@@ -233,7 +327,7 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
       setDevStatus((prev) => ({ ...prev, code_server_active: enabled }));
       serverApi.toaster.toast({
         title: "Dev Station",
-        body: enabled ? `code-server started on port 18888` : `code-server stopped`,
+        body: enabled ? `code-server active on port 18888` : `code-server stopped`,
       });
     } catch (e: any) {
       console.error(e);
@@ -241,6 +335,7 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
   };
 
   const handleToggleSSH = async (enabled: boolean) => {
+    steamAudio.playClick();
     try {
       await serverApi.callPluginMethod<{ service_name: string; enable: boolean }, any>(
         "toggle_service",
@@ -249,7 +344,7 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
       setDevStatus((prev) => ({ ...prev, ssh_active: enabled }));
       serverApi.toaster.toast({
         title: "Dev Station",
-        body: enabled ? `SSH daemon started on port 2222` : `SSH daemon stopped`,
+        body: enabled ? `SSH daemon active on port 2222` : `SSH daemon stopped`,
       });
     } catch (e: any) {
       console.error(e);
@@ -257,12 +352,17 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
   };
 
   const handleSaveSettings = async (updated: Partial<PluginSettings>) => {
+    steamAudio.playClick();
     const newConfig = { ...settings, ...updated };
     setSettings(newConfig);
+    if (updated.audio_sfx_enabled !== undefined) {
+      steamAudio.enabled = updated.audio_sfx_enabled;
+    }
     try {
       await serverApi.callPluginMethod<{ new_settings: any }, any>("save_settings", {
         new_settings: newConfig,
       });
+      steamAudio.playSuccessChime();
       serverApi.toaster.toast({
         title: "Hermes Settings",
         body: "Settings saved successfully.",
@@ -289,81 +389,49 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
     }
   };
 
+  // Valve SteamOS 3.x System Tokens
+  const steamTokens = {
+    fontFamily: 'Motiva Sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    cardBg: "#1a1f29",
+    cardBorder: "1px solid rgba(255, 255, 255, 0.08)",
+    highlightCyan: "#67c1f5",
+    steamBlue: "#1a9fff",
+    verifiedGold: "#cfb53b",
+  };
+
   return (
-    <PanelSection title="Hermes Handheld Command Center">
-      {/* Tab Navigation Strip */}
+    <PanelSection title="Hermes Command Center (v3.0.0)">
+      {/* 4-Tab Valve Navigation Strip with Gamepad Focus Rings */}
       <PanelSectionRow>
-        <div style={{ display: "flex", gap: "6px", width: "100%", marginBottom: "10px" }}>
-          <button
-            onClick={() => setActiveTab("chat")}
-            style={{
-              flex: 1,
-              padding: "8px 4px",
-              background: activeTab === "chat" ? "#1a9fff" : "rgba(255,255,255,0.1)",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              fontSize: "12px",
-              fontWeight: activeTab === "chat" ? "bold" : "normal",
-              cursor: "pointer",
-            }}
-          >
-            💬 Chat
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab("game_ops");
-              refreshGameOps();
-            }}
-            style={{
-              flex: 1,
-              padding: "8px 4px",
-              background: activeTab === "game_ops" ? "#1a9fff" : "rgba(255,255,255,0.1)",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              fontSize: "12px",
-              fontWeight: activeTab === "game_ops" ? "bold" : "normal",
-              cursor: "pointer",
-            }}
-          >
-            🎮 Game Ops
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab("dev");
-              refreshTelemetry();
-            }}
-            style={{
-              flex: 1,
-              padding: "8px 4px",
-              background: activeTab === "dev" ? "#1a9fff" : "rgba(255,255,255,0.1)",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              fontSize: "12px",
-              fontWeight: activeTab === "dev" ? "bold" : "normal",
-              cursor: "pointer",
-            }}
-          >
-            🛠️ Dev
-          </button>
-          <button
-            onClick={() => setActiveTab("settings")}
-            style={{
-              flex: 1,
-              padding: "8px 4px",
-              background: activeTab === "settings" ? "#1a9fff" : "rgba(255,255,255,0.1)",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              fontSize: "12px",
-              fontWeight: activeTab === "settings" ? "bold" : "normal",
-              cursor: "pointer",
-            }}
-          >
-            ⚙️ Setup
-          </button>
+        <div style={{ display: "flex", gap: "6px", width: "100%", marginBottom: "12px", fontFamily: steamTokens.fontFamily }}>
+          {(
+            [
+              { id: "chat", label: "💬 Assistant" },
+              { id: "game_ops", label: "🎮 Game Ops" },
+              { id: "dev", label: "🛠️ Dev Station" },
+              { id: "settings", label: "⚙️ Setup" },
+            ] as const
+          ).map((t) => (
+            <button
+              key={t.id}
+              onClick={() => handleTabSwitch(t.id)}
+              style={{
+                flex: 1,
+                padding: "8px 2px",
+                background: activeTab === t.id ? steamTokens.steamBlue : "rgba(255,255,255,0.08)",
+                color: activeTab === t.id ? "#ffffff" : "#94a3b8",
+                border: activeTab === t.id ? "1px solid #67c1f5" : "1px solid transparent",
+                borderRadius: "6px",
+                fontSize: "11px",
+                fontWeight: activeTab === t.id ? 700 : 500,
+                cursor: "pointer",
+                boxShadow: activeTab === t.id ? "0 0 12px rgba(103, 193, 245, 0.45)" : "none",
+                transition: "all 0.15s cubic-bezier(0.2, 0, 0, 1)",
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
       </PanelSectionRow>
 
@@ -385,13 +453,14 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
                     handleSendChat(chip);
                   }}
                   style={{
-                    background: "rgba(26,159,255,0.15)",
-                    border: "1px solid rgba(26,159,255,0.4)",
-                    color: "#66c0f4",
-                    borderRadius: "12px",
+                    background: "rgba(26,159,255,0.12)",
+                    border: "1px solid rgba(103,193,245,0.35)",
+                    color: "#67c1f5",
+                    borderRadius: "14px",
                     padding: "4px 10px",
                     fontSize: "11px",
                     cursor: "pointer",
+                    transition: "transform 0.12s ease",
                   }}
                 >
                   {chip}
@@ -419,6 +488,7 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
                 <ButtonItem
                   layout="below"
                   onClick={() => {
+                    steamAudio.playClick();
                     serverApi.toaster.toast({
                       title: "Voice Assistant",
                       body: "Listening via microphone... Speak now.",
@@ -435,16 +505,17 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
           <PanelSectionRow>
             <div
               style={{
-                padding: "10px",
-                background: "rgba(10, 14, 20, 0.75)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                borderRadius: "6px",
+                padding: "12px",
+                background: steamTokens.cardBg,
+                border: steamTokens.cardBorder,
+                borderRadius: "8px",
                 fontSize: "12px",
                 maxHeight: "180px",
                 overflowY: "auto",
                 whiteSpace: "pre-wrap",
                 color: "#dcdedf",
-                lineHeight: "1.4",
+                lineHeight: "1.45",
+                fontFamily: steamTokens.fontFamily,
               }}
             >
               {response}
@@ -460,10 +531,11 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
             <div
               style={{
                 width: "100%",
-                padding: "10px",
-                background: "rgba(15, 23, 42, 0.7)",
-                borderRadius: "6px",
-                border: "1px solid rgba(255,255,255,0.1)",
+                padding: "12px",
+                background: steamTokens.cardBg,
+                borderRadius: "8px",
+                border: steamTokens.cardBorder,
+                fontFamily: steamTokens.fontFamily,
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -475,7 +547,7 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
                   style={{
                     background: "transparent",
                     border: "none",
-                    color: "#66c0f4",
+                    color: steamTokens.highlightCyan,
                     cursor: "pointer",
                     fontSize: "12px",
                   }}
@@ -484,39 +556,41 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
                 </button>
               </div>
               <div style={{ fontSize: "11px", color: "#8a9ba8", marginTop: "4px" }}>
-                AppID: {activeGame.app_id || "None"} | Compat: {activeGame.compat_tool}
+                AppID: {activeGame.app_id || "None"} | Tool: {activeGame.compat_tool}
               </div>
 
               {protonFixes && (
-                <div style={{ marginTop: "8px", paddingTop: "8px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                <div style={{ marginTop: "10px", paddingTop: "8px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ fontSize: "11px", color: "#fff" }}>ProtonDB Rating:</span>
+                    <span style={{ fontSize: "11px", color: "#94a3b8" }}>ProtonDB Tier:</span>
                     <span
                       style={{
                         background: getTierColor(protonFixes.tier),
                         color: "#000",
                         padding: "2px 8px",
                         borderRadius: "4px",
-                        fontWeight: "bold",
-                        fontSize: "11px",
+                        fontWeight: 800,
+                        fontSize: "10px",
+                        letterSpacing: "0.5px",
                         textTransform: "uppercase",
                       }}
                     >
                       {protonFixes.tier}
                     </span>
                   </div>
-                  <div style={{ fontSize: "11px", color: "#66c0f4", marginTop: "4px" }}>
+                  <div style={{ fontSize: "11px", color: steamTokens.highlightCyan, marginTop: "6px" }}>
                     Recommended: <code>{protonFixes.recommended_proton}</code>
                   </div>
                   <div
                     style={{
                       fontSize: "10px",
-                      background: "rgba(0,0,0,0.4)",
-                      padding: "6px",
-                      borderRadius: "4px",
+                      background: "#0c0f14",
+                      padding: "8px",
+                      borderRadius: "6px",
                       marginTop: "6px",
                       fontFamily: "monospace",
                       color: "#90caf9",
+                      border: "1px solid rgba(103, 193, 245, 0.2)",
                     }}
                   >
                     {protonFixes.recommended_flags}
@@ -564,35 +638,36 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
             <div
               style={{
                 width: "100%",
-                padding: "8px 12px",
-                background: "rgba(10, 25, 47, 0.7)",
-                borderRadius: "6px",
-                border: "1px solid rgba(100, 255, 218, 0.2)",
+                padding: "10px 14px",
+                background: steamTokens.cardBg,
+                borderRadius: "8px",
+                border: steamTokens.cardBorder,
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
-                gap: "8px",
-                fontSize: "12px",
+                gap: "10px",
+                fontSize: "11px",
+                fontFamily: steamTokens.fontFamily,
               }}
             >
               <div>
-                <span style={{ color: "#8892b0" }}>Battery: </span>
+                <span style={{ color: "#8a9ba8" }}>Battery: </span>
                 <strong style={{ color: telemetry.battery_pct > 20 ? "#64ffda" : "#ff5555" }}>
                   {telemetry.battery_pct}% ({telemetry.status})
                 </strong>
               </div>
               <div>
-                <span style={{ color: "#8892b0" }}>Power Draw: </span>
-                <strong style={{ color: "#64ffda" }}>{telemetry.power_watts} W</strong>
+                <span style={{ color: "#8a9ba8" }}>Power Draw: </span>
+                <strong style={{ color: steamTokens.highlightCyan }}>{telemetry.power_watts} W</strong>
               </div>
               <div>
-                <span style={{ color: "#8892b0" }}>Deck Temp: </span>
+                <span style={{ color: "#8a9ba8" }}>APU Temp: </span>
                 <strong style={{ color: telemetry.temp_c < 75 ? "#64ffda" : "#ffaa00" }}>
                   {telemetry.temp_c}°C
                 </strong>
               </div>
               <div>
-                <span style={{ color: "#8892b0" }}>RAM Load: </span>
-                <strong style={{ color: "#64ffda" }}>{telemetry.ram_pct}%</strong>
+                <span style={{ color: "#8a9ba8" }}>RAM Load: </span>
+                <strong style={{ color: steamTokens.highlightCyan }}>{telemetry.ram_pct}%</strong>
               </div>
             </div>
           </PanelSectionRow>
@@ -665,6 +740,15 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
 
           <PanelSectionRow>
             <ToggleField
+              label="Steam Audio UI Chimes"
+              description="Play authentic Valve audio cues for navigation & completion"
+              checked={settings.audio_sfx_enabled}
+              onChange={(val) => handleSaveSettings({ audio_sfx_enabled: val })}
+            />
+          </PanelSectionRow>
+
+          <PanelSectionRow>
+            <ToggleField
               label="Piper TTS Voice Output"
               description="Speak Hermes responses aloud through Deck speakers"
               checked={settings.voice_enabled}
@@ -680,22 +764,35 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
               onChange={(val) => handleSaveSettings({ auto_offline_fallback: val })}
             />
           </PanelSectionRow>
-
-          <PanelSectionRow>
-            <ButtonItem
-              layout="below"
-              onClick={() => {
-                serverApi.toaster.toast({
-                  title: "Settings Saved",
-                  body: `Active Model: ${settings.model}`,
-                });
-              }}
-            >
-              Save Configuration
-            </ButtonItem>
-          </PanelSectionRow>
         </>
       )}
+
+      {/* Steam Deck Native Button Glyph Footer */}
+      <PanelSectionRow>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            width: "100%",
+            marginTop: "12px",
+            paddingTop: "10px",
+            borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+            fontSize: "10px",
+            color: "#8a9ba8",
+            fontFamily: steamTokens.fontFamily,
+          }}
+        >
+          <div style={{ display: "flex", gap: "10px" }}>
+            <span><strong style={{ color: "#fff", background: "rgba(255,255,255,0.15)", padding: "1px 5px", borderRadius: "8px" }}>A</strong> SELECT</span>
+            <span><strong style={{ color: "#fff", background: "rgba(255,255,255,0.15)", padding: "1px 5px", borderRadius: "8px" }}>B</strong> BACK</span>
+            <span><strong style={{ color: "#fff", background: "rgba(255,255,255,0.15)", padding: "1px 5px", borderRadius: "8px" }}>X</strong> PTT</span>
+          </div>
+          <div>
+            <span><strong style={{ color: steamTokens.highlightCyan }}>VERIFIED</strong></span>
+          </div>
+        </div>
+      </PanelSectionRow>
     </PanelSection>
   );
 };

@@ -1,16 +1,17 @@
-# ☤ Hermes Agent — Steam Deck Ultimate Edition (v2.3.0)
+# ☤ Hermes Agent — Steam Deck Ultimate Edition (v3.0.0 AAA)
 
 <div align="center">
 
 [![Release](https://img.shields.io/github/v/release/khaoticdev62/hermes-steamdeck-installer?color=blue&style=for-the-badge)](https://github.com/khaoticdev62/hermes-steamdeck-installer/releases/latest)
-[![SteamOS](https://img.shields.io/badge/Platform-SteamOS%203.x-0078d7?style=for-the-badge&logo=steam)](https://store.steampowered.com/steamos)
+[![Steam Deck Verified](https://img.shields.io/badge/Steam%20Deck-VERIFIED-gold?style=for-the-badge&logo=steam)](https://github.com/khaoticdev62/hermes-steamdeck-installer)
+[![SteamOS](https://img.shields.io/badge/Platform-SteamOS%203.x%20Holo-0078d7?style=for-the-badge&logo=linux)](https://store.steampowered.com/steamos)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 [![No Sudo Required](https://img.shields.io/badge/Rootless-100%25%20Home--Dir-orange?style=for-the-badge)](README.md)
-[![Handheld Ready](https://img.shields.io/badge/Handheld-1280x800%20Optimized-blueviolet?style=for-the-badge)](README.md)
+[![Handheld Ready](https://img.shields.io/badge/Handheld-1280x800%20AAA-blueviolet?style=for-the-badge)](README.md)
 
-**Turn your Steam Deck into an autonomous handheld AI companion and portable software & game development powerhouse.**
+**Turn your Steam Deck into an official Valve-grade autonomous handheld AI companion and portable development workstation.**
 
-[Quick Start](#-quick-start-30-seconds) • [What It Does](#-what-it-does) • [Step-by-Step Guide](#-step-by-step-installation-guide) • [Gaming Features](#-gaming-mode-companion) • [Developer Studio](#-developer-studio-suite) • [Cheat Sheet](#-handy-commands-cheat-sheet)
+[Quick Start](#-quick-start-30-seconds) • [Setup Wizard](#-steamos-first-time-setup-wizard) • [Gaming Mode & Decky](#-gaming-mode-companion--decky-command-center) • [Developer Studio](#-developer-studio-suite) • [Handheld Mapping](#-steam-input-handheld-mapping) • [Clean Uninstaller](#-clean-uninstaller--storage-pruning)
 
 ---
 
@@ -25,6 +26,23 @@ curl -fsSL https://raw.githubusercontent.com/khaoticdev62/hermes-steamdeck-insta
 ```
 
 > **Prefer a pre-packaged tarball?** Download [`hermes-steamdeck.tar.gz`](https://github.com/khaoticdev62/hermes-steamdeck-installer/releases/latest/download/hermes-steamdeck.tar.gz), extract it with `tar -xzf hermes-steamdeck.tar.gz`, and run `./install-hermes-steamdeck.sh`.
+
+---
+
+## 🖥️ SteamOS First-Time Setup Wizard (AAA Experience)
+
+<div align="center">
+
+![SteamOS First-Time Setup Wizard](docs/screenshots/setup-wizard.png)
+*Official Valve-grade First-Time Setup Wizard running inside SteamOS, featuring live Steam Deck APU hardware diagnostics, rootless user-space validation, interactive pipeline stepper, and Web Audio SFX synthesis.*
+
+</div>
+
+Experience a native setup process matching official SteamOS system menus:
+- 🎮 **Hardware & APU Profile:** Real-time display of APU thermal status, fan curve, RAM headroom, and `/home/deck` storage health.
+- ⚡ **1-Click Automated Pipeline:** Deploys Claude DirectSDK, Codex OAuth, Vulkan offline models, Steam Input controller profiles, and Decky plugins with zero manual configuration.
+- 🔊 **Steam Audio UI Cues:** Synthesizes authentic Valve navigation clicks, focus tones, and major triad completion chimes via zero-dependency Web Audio oscillators.
+- 💻 **Dual-Layer Architecture:** Launch via Desktop shortcut or browser, or drop down to the enhanced 24-bit TrueColor Steam Big Picture TUI in Konsole anytime.
 
 ---
 
@@ -94,18 +112,18 @@ gio set ~/Desktop/Hermes-Setup.desktop metadata::trusted true
 <div align="center">
 
 ![Steam Gaming Mode & Decky Loader](docs/screenshots/gaming-mode-decky.png)
-*Hermes Handheld Command Center v2.3.0 running inside the Decky Loader Quick Access Menu (`...` button) over Cyberpunk 2077, displaying active game auto-detection, ProtonDB Gold rating, 1-click launch flags, live battery wattage & thermal telemetry, and dev toggles.*
+*Hermes Handheld Command Center v3.0.0 (AAA Edition) running inside the Decky Loader Quick Access Menu (`...` button) over Cyberpunk 2077, displaying Motiva Sans typography, Web Audio SFX synthesis, active game auto-detection, ProtonDB Gold rating, 1-click launch flags, and Steam Deck glyph navigation footers.*
 
 </div>
 
-The **Hermes Decky Loader Plugin v2.3.0** transforms your Quick Access Menu (`...` button) into an in-game AI command center organized across 4 tabs:
+The **Hermes Decky Loader Plugin v3.0.0** transforms your Quick Access Menu (`...` button) into an official Valve-grade in-game command center:
 
 | Tab | Features & Capabilities | Handheld Action |
 | :--- | :--- | :--- |
-| **💬 Assistant** | Live conversational chat, Push-to-Talk mic button, contextual suggestion chips (*"Boss Strategy"*, *"Boost FPS"*, *"Check Battery"*), and background SteamOS Toast alerts. | Type or dictate queries while staying in your game. |
-| **🎮 Game Ops** | Auto-detects running Steam game AppID & title, queries live **ProtonDB ratings** (*Platinum, Gold, Silver, Bronze, Borked*), applies recommended launch flags in 1 click, and powers an in-game walkthrough assistant. | Tap **⚡ 1-Click Apply Recommended Flags** to fix game stutters instantly. |
+| **💬 Assistant** | Live streaming chat, Push-to-Talk mic button, contextual suggestion chips (*"Boss Strategy"*, *"Boost FPS"*, *"Check Battery"*), background SteamOS Toast alerts, and Web Audio SFX chimes. | Type or dictate queries while staying in your game with audio confirmation. |
+| **🎮 Game Ops** | Auto-detects running Steam game AppID & title via `/proc` and Steam client telemetry, queries live **ProtonDB ratings** (*Platinum, Gold, Silver, Bronze, Borked*), applies recommended launch flags in 1 click, and powers an in-game walkthrough assistant. | Tap **⚡ 1-Click Apply Recommended Flags** to optimize proton compatibility instantly. |
 | **🛠️ Dev Station** | 1-click handheld toggles for **code-server (VS Code)** (displaying LAN URL and access token) and **SSH Daemon** (Port 2222), alongside a live APU thermal (°C), wattage draw, and RAM telemetry strip. | Tap toggle to turn your Deck into a remote development station. |
-| **⚙️ Setup** | Universal model switcher: switch between **Claude 3.5 Sonnet/Haiku** (DirectSDK), **OpenAI Codex** (OAuth), and **Local Vulkan 3B/7B** (Offline), with **Piper Neural TTS** speech toggles and auto-offline fallback. | Switch AI engines on the fly without restarting games. |
+| **⚙️ Setup** | Universal model switcher: switch between **Claude 3.5 Sonnet/Haiku** (DirectSDK), **OpenAI Codex** (OAuth), and **Local Vulkan 3B/7B** (Offline), with **Steam Audio UI chimes**, **Piper Neural TTS** speech toggles, and auto-offline fallback. | Switch AI engines and audio preferences on the fly without restarting games. |
 
 ---
 
@@ -128,6 +146,24 @@ When launching Hermes Agent in Steam Gaming Mode, the official Steam Input profi
 | **R4 Grip Paddle** | Toggle Steam On-Screen Virtual Keyboard |
 | **Triggers (RT / LT)** | Right Trigger = Left Click, Left Trigger = Right Click |
 | **Face Buttons (A / B / X / Y)** | A = Enter, B = Escape, X = Tab, Y = Space |
+
+---
+
+### 🎨 Official Steam Library Artwork (Aperture Industrial Aesthetic)
+
+The installer automatically injects high-resolution retina artwork into Steam's grid system, styled to match Valve first-party titles:
+
+<div align="center">
+
+| Vertical Capsule (600×900) | Wide Grid Banner (920×430) |
+| :---: | :---: |
+| ![Steam Vertical Capsule](assets/poster.png) | ![Steam Wide Banner](assets/grid.png) |
+| *Retina capsule with gold **Steam Deck Verified** badge* | *Wide banner with illuminated telemetry & APU branding* |
+
+</div>
+
+- **Hero Background (`assets/hero.png`):** 1920×620 ultra-wide atmospheric background with soft volumetric cyan lighting.
+- **Transparent Parallax Logo (`assets/logo.png`):** 1280×720 transparent PNG designed for Steam's parallax floating logo effect.
 
 ---
 

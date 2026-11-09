@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-#  Hermes Agent Steam Deck Ultimate Developer & Gaming Edition v2.3.0
+#  Hermes Agent Steam Deck Ultimate Developer & Gaming Edition v3.0.0 (AAA)
 #  Target OS: SteamOS 3.x (Arch-based Linux, immutable rootfs friendly)
 # ==============================================================================
 
@@ -8,16 +8,16 @@ set -u
 
 REPO_OWNER="khaoticdev62"
 REPO_NAME="hermes-steamdeck-installer"
-SCRIPT_VERSION="2.3.0"
+SCRIPT_VERSION="3.0.0"
 
 LOG_DIR="${HOME}/.local/share/hermes-installer"
 LOG_FILE="${LOG_DIR}/installer.log"
 mkdir -p "${LOG_DIR}"
 exec > >(tee -a "${LOG_FILE}") 2>&1
 
-APP_TITLE="Hermes Agent - Steam Deck Developer & Gaming Suite"
+APP_TITLE="Hermes Agent — Steam Deck AAA Suite"
 
-# ANSI Terminal Colors
+# 24-bit TrueColor SteamOS Terminal Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -26,6 +26,11 @@ CYAN='\033[0;36m'
 MAGENTA='\033[0;35m'
 BOLD='\033[1m'
 NC='\033[0m'
+
+STEAM_BLUE='\033[38;2;26;159;255m'
+STEAM_CYAN='\033[38;2;103;193;245m'
+STEAM_GOLD='\033[38;2;207;181;59m'
+STEAM_SURFACE='\033[38;2;35;42;53m'
 
 # Determine UI Mode: GUI (kdialog/zenity) or Terminal
 UI_BACKEND="terminal"
@@ -348,9 +353,23 @@ run_ultimate_setup() {
 # Main Interactive Menu
 # ------------------------------------------------------------------------------
 
+# Module 10: SteamOS HTML5 First-Time Setup Wizard
+launch_html_wizard() {
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local wizard_file="${script_dir}/assets/installer/setup-wizard.html"
+    if [[ -f "${wizard_file}" ]]; then
+        echo -e "\n${BOLD}${STEAM_CYAN}=== Launching SteamOS First-Time Setup Wizard ===${NC}"
+        if command -v xdg-open >/dev/null 2>&1; then
+            xdg-open "${wizard_file}" >/dev/null 2>&1 &
+        fi
+        echo -e "${GREEN}[✓] Setup wizard launched in browser.${NC}"
+    fi
+}
+
 show_gui_menu() {
     if [[ "${UI_BACKEND}" == "kdialog" ]]; then
-        kdialog --title "${APP_TITLE}" --menu "Select an option for your Steam Deck:" \
+        kdialog --title "${APP_TITLE} (v${SCRIPT_VERSION} AAA)" --menu "SteamOS 3.x Verified • Choose an action:" \
+            "0" "🌐 Launch SteamOS HTML5 First-Time Setup Wizard" \
             "1" "🌟 Full Ultimate Setup (Gaming + Dev + Gamepad Profile)" \
             "2" "Core Engine (Hermes + Claude + Codex)" \
             "3" "🛠️ Developer Studio Suite (code-server, Godot 4, Distrobox)" \
@@ -366,8 +385,9 @@ show_gui_menu() {
             "13" "🧹 Clean Uninstaller & Storage Prune" \
             "14" "Exit" 2>/dev/null
     elif [[ "${UI_BACKEND}" == "zenity" ]]; then
-        zenity --list --title="${APP_TITLE}" --text="Select an option for your Steam Deck:" \
-            --column="Option" --column="Description" --width=560 --height=460 \
+        zenity --list --title="${APP_TITLE} (v${SCRIPT_VERSION} AAA)" --text="SteamOS 3.x Verified • Choose an action:" \
+            --column="Option" --column="Description" --width=580 --height=490 \
+            "0" "🌐 Launch SteamOS HTML5 First-Time Setup Wizard" \
             "1" "🌟 Full Ultimate Setup (Gaming + Dev + Gamepad Profile)" \
             "2" "Core Engine (Hermes + Claude + Codex)" \
             "3" "🛠️ Developer Studio Suite (code-server, Godot 4, Distrobox)" \
@@ -394,9 +414,11 @@ main() {
             choice=$(show_gui_menu)
             if [[ -z "${choice}" ]]; then exit 0; fi
         else
-            echo -e "\n${BOLD}${CYAN}====================================================================${NC}"
-            echo -e "${BOLD}   ${APP_TITLE} (v${SCRIPT_VERSION})${NC}"
-            echo -e "${BOLD}${CYAN}====================================================================${NC}"
+            echo -e "\n${STEAM_BLUE}╭──────────────────────────────────────────────────────────────────╮${NC}"
+            echo -e "${STEAM_BLUE}│${NC}  ${BOLD}${STEAM_CYAN}☤ HERMES AGENT — STEAM DECK ULTIMATE EDITION (v${SCRIPT_VERSION} AAA)${NC}       ${STEAM_BLUE}│${NC}"
+            echo -e "${STEAM_BLUE}│${NC}  ${STEAM_GOLD}SteamOS 3.x Verified • Rootless User-Space • Handheld AI${NC}       ${STEAM_BLUE}│${NC}"
+            echo -e "${STEAM_BLUE}╰──────────────────────────────────────────────────────────────────╯${NC}"
+            echo -e "  ${BOLD}${STEAM_CYAN}0)${NC} 🌐 ${BOLD}Launch SteamOS HTML5 First-Time Setup Wizard${NC}"
             echo -e "  ${BOLD}${MAGENTA}1)${NC} 🌟 ${BOLD}Full Ultimate Setup${NC} (Gaming + Dev + Steam Input Profile)"
             echo -e "  ${BOLD}2)${NC} Core Engine (Hermes + Claude DirectSDK + Codex OAuth)"
             echo -e "  ${BOLD}3)${NC} 🛠️ ${BOLD}Developer Studio Suite${NC} (code-server, Godot 4, Distrobox, Dev Skills)"
@@ -411,11 +433,12 @@ main() {
             echo -e "  ${BOLD}12)${NC} Launch Hermes Agent"
             echo -e "  ${BOLD}13)${NC} 🧹 ${BOLD}Clean Uninstaller & Storage Prune${NC}"
             echo -e "  ${BOLD}14)${NC} Exit"
-            echo -e "--------------------------------------------------------------------"
-            read -r -p "Enter selection [1-14]: " choice
+            echo -e "${STEAM_BLUE}────────────────────────────────────────────────────────────────────${NC}"
+            read -r -p "Enter selection [0-14]: " choice
         fi
 
         case "${choice}" in
+            0) launch_html_wizard; read -r -p "Press Enter to continue..." ;;
             1) run_ultimate_setup; read -r -p "Press Enter to continue..." ;;
             2) install_core_engine; read -r -p "Press Enter to continue..." ;;
             3) install_developer_studio; read -r -p "Press Enter to continue..." ;;

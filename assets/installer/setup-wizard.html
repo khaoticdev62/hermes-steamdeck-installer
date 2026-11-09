@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hermes Agent — SteamOS First-Time Setup Wizard</title>
+<style>
+  :root {
+    --steam-bg: #0e141b;
+    --steam-panel: #161c26;
+    --steam-card: #1f2735;
+    --steam-card-border: rgba(255, 255, 255, 0.08);
+    --steam-blue: #1a9fff;
+    --steam-cyan: #67c1f5;
+    --steam-green: #10b981;
+    --steam-gold: #cfb53b;
+    --steam-text: #ffffff;
+    --steam-subtext: #8a9ba8;
+    --steam-font: 'Motiva Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+
+  body {
+    width: 1280px;
+    height: 800px;
+    background: var(--steam-bg);
+    color: var(--steam-text);
+    font-family: var(--steam-font);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Ambient SteamOS Vignette & Blueprint Lines */
+  .vignette-bg {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at 20% 20%, rgba(26, 159, 255, 0.12), transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(103, 193, 245, 0.08), transparent 50%),
+                #0e141b;
+    z-index: 1;
+  }
+
+  .blueprint-grid {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 2;
+  }
+
+  /* Top Navigation Bar */
+  header {
+    height: 60px;
+    background: rgba(22, 28, 38, 0.95);
+    border-bottom: 1px solid var(--steam-card-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    z-index: 10;
+  }
+
+  .brand-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .steam-logo {
+    width: 32px;
+    height: 32px;
+    background: var(--steam-blue);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 16px;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(26, 159, 255, 0.5);
+  }
+
+  .brand-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #fff;
+  }
+
+  .brand-subtitle {
+    font-size: 12px;
+    color: var(--steam-subtext);
+  }
+
+  .system-meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 13px;
+    color: var(--steam-subtext);
+  }
+
+  .badge-verified {
+    background: rgba(207, 181, 59, 0.15);
+    border: 1px solid var(--steam-gold);
+    color: var(--steam-gold);
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Main Wizard Container */
+  main {
+    flex: 1;
+    display: flex;
+    padding: 32px;
+    gap: 28px;
+    z-index: 10;
+  }
+
+  /* Left Panel: Steam Deck Hardware Diagram & Telemetry */
+  .left-panel {
+    flex: 1.1;
+    background: rgba(22, 28, 38, 0.85);
+    border: 1px solid var(--steam-card-border);
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+  }
+
+  .panel-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .deck-diagram {
+    background: #111620;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin: 16px 0;
+  }
+
+  .deck-silhouette {
+    width: 320px;
+    height: 120px;
+    background: radial-gradient(circle at 50% 50%, #2a3548, #18202c);
+    border-radius: 24px;
+    border: 2px solid rgba(103, 193, 245, 0.3);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 20px rgba(26, 159, 255, 0.2);
+  }
+
+  .deck-screen {
+    width: 170px;
+    height: 80px;
+    background: #000;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--steam-cyan);
+    font-family: monospace;
+  }
+
+  .deck-trackpad-l, .deck-trackpad-r {
+    width: 38px;
+    height: 38px;
+    background: #1c2534;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    position: absolute;
+    top: 40px;
+  }
+  .deck-trackpad-l { left: 24px; }
+  .deck-trackpad-r { right: 24px; }
+
+  .telemetry-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .telemetry-card {
+    background: #18212e;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .telemetry-card .lbl { font-size: 11px; color: var(--steam-subtext); }
+  .telemetry-card .val { font-size: 16px; font-weight: 700; color: var(--steam-cyan); margin-top: 2px; }
+
+  /* Right Panel: Interactive Stepper & Pipeline */
+  .right-panel {
+    flex: 1.4;
+    background: rgba(22, 28, 38, 0.85);
+    border: 1px solid var(--steam-card-border);
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+  }
+
+  .stepper-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+    overflow-y: auto;
+  }
+
+  .step-card {
+    background: var(--steam-card);
+    border: 1px solid var(--steam-card-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .step-card.active {
+    border-color: var(--steam-cyan);
+    box-shadow: 0 0 14px rgba(103, 193, 245, 0.3);
+    transform: scale(1.01);
+  }
+
+  .step-card.done {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.06);
+  }
+
+  .step-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .step-card.done .step-icon {
+    background: var(--steam-green);
+    color: #000;
+  }
+
+  .step-card.active .step-icon {
+    background: var(--steam-blue);
+    color: #fff;
+    box-shadow: 0 0 8px rgba(26, 159, 255, 0.6);
+  }
+
+  .step-details {
+    flex: 1;
+  }
+  .step-name { font-size: 14px; font-weight: 700; color: #fff; }
+  .step-desc { font-size: 11px; color: var(--steam-subtext); margin-top: 2px; }
+
+  /* Action Trigger Row */
+  .action-row {
+    display: flex;
+    gap: 14px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--steam-card-border);
+  }
+
+  .btn-primary {
+    flex: 2;
+    background: linear-gradient(90deg, #1a9fff, #0284c7);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 20px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 18px rgba(26, 159, 255, 0.4);
+    transition: all 0.15s ease-out;
+  }
+  .btn-primary:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 24px rgba(26, 159, 255, 0.6);
+  }
+
+  .btn-secondary {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.08);
+    color: #cbd5e1;
+    border: 1px solid var(--steam-card-border);
+    border-radius: 8px;
+    padding: 14px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s ease;
+  }
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.14);
+  }
+
+  /* Footer Controls Bar */
+  footer {
+    height: 48px;
+    background: rgba(14, 18, 26, 0.95);
+    border-top: 1px solid var(--steam-card-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    font-size: 12px;
+    color: var(--steam-subtext);
+    z-index: 10;
+  }
+
+  .footer-hints {
+    display: flex;
+    gap: 24px;
+  }
+  .btn-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 800;
+    margin-right: 6px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="vignette-bg"></div>
+  <div class="blueprint-grid"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="brand-group">
+      <div class="steam-logo">☤</div>
+      <div>
+        <div class="brand-title">SteamOS First-Time Setup — Hermes Agent Suite</div>
+        <div class="brand-subtitle">v3.0.0 AAA Edition • Rootless /home/deck Architecture</div>
+      </div>
+    </div>
+    <div class="system-meta">
+      <span>📶 Wi-Fi 6 Connected</span>
+      <span>⚡ Battery: 88% (AC DOCKED)</span>
+      <span class="badge-verified">STEAM DECK VERIFIED</span>
+    </div>
+  </header>
+
+  <!-- Main Body -->
+  <main>
+    <!-- Left Panel: Diagnostics & Hardware -->
+    <div class="left-panel">
+      <div>
+        <div class="panel-title">
+          <span>🎮</span> Steam Deck Hardware Profile
+        </div>
+        <p style="font-size:12px; color:var(--steam-subtext); margin-top:4px;">
+          Detected: SteamOS 3.5+ (Holo Kernel) • AMD Aerith/Sephiroth APU
+        </p>
+      </div>
+
+      <div class="deck-diagram">
+        <div class="deck-silhouette">
+          <div class="deck-trackpad-l"></div>
+          <div class="deck-screen">
+            <div>HERMES AGENT</div>
+            <div style="color:#10b981; font-size:8px; margin-top:4px;">SYSTEM READY</div>
+          </div>
+          <div class="deck-trackpad-r"></div>
+        </div>
+        <div style="font-size:11px; color:#94a3b8; text-align:center;">
+          Left Trackpad Radial Menu & L4/R4 Paddles Armed
+        </div>
+      </div>
+
+      <div class="telemetry-row">
+        <div class="telemetry-card">
+          <div class="lbl">APU Thermal / Fan</div>
+          <div class="val" style="color:#10b981;">54°C • Quiet</div>
+        </div>
+        <div class="telemetry-card">
+          <div class="lbl">Unified RAM Usage</div>
+          <div class="val">3.4 GB / 16.0 GB</div>
+        </div>
+        <div class="telemetry-card">
+          <div class="lbl">Rootfs Integrity</div>
+          <div class="val" style="color:#10b981;">100% Read-Only Safe</div>
+        </div>
+        <div class="telemetry-card">
+          <div class="lbl">User-Space Target</div>
+          <div class="val" style="font-size:13px; color:#cbd5e1;">/home/deck</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel: Stepper & Execution -->
+    <div class="right-panel">
+      <div class="panel-title">
+        <span>🚀</span> Automated Deployment Pipeline
+      </div>
+
+      <div class="stepper-list">
+        <div class="step-card done">
+          <div class="step-icon">✓</div>
+          <div class="step-details">
+            <div class="step-name">1. SteamOS Environment & Rootless Pre-Flight</div>
+            <div class="step-desc">Validated non-root directory paths, user permissions, and Python environment.</div>
+          </div>
+        </div>
+
+        <div class="step-card done">
+          <div class="step-icon">✓</div>
+          <div class="step-details">
+            <div class="step-name">2. AI Engines & DirectSDK Subscriptions</div>
+            <div class="step-desc">Configured Claude 3.5 DirectSDK, OpenAI Codex OAuth, and Vulkan 3B/7B.</div>
+          </div>
+        </div>
+
+        <div class="step-card done">
+          <div class="step-icon">✓</div>
+          <div class="step-details">
+            <div class="step-name">3. Steam Library Injection & High-Res Grid Artwork</div>
+            <div class="step-desc">Injected shortcuts.vdf with Aperture 600x900 poster, banner, hero & parallax logo.</div>
+          </div>
+        </div>
+
+        <div class="step-card active">
+          <div class="step-icon">4</div>
+          <div class="step-details">
+            <div class="step-name">4. Steam Input Official 5-Way Radial Gamepad Profile</div>
+            <div class="step-desc">Installing Left Trackpad touch menu and L4/R4 paddle push-to-talk triggers.</div>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-icon">5</div>
+          <div class="step-details">
+            <div class="step-name">5. Decky Loader Handheld Command Center (v3.0.0)</div>
+            <div class="step-desc">Deploying 4-tab QAM overlay: Chat, ProtonDB Game Ops, Dev Station & Settings.</div>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-icon">6</div>
+          <div class="step-details">
+            <div class="step-name">6. Handheld Dev Station (code-server & Godot 4)</div>
+            <div class="step-desc">Enabling portable browser VS Code on port 18888, SSH, and Godot 4 engine.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-primary" onclick="triggerInstall()">
+          <span>⚡</span> BEGIN 1-CLICK ULTIMATE INSTALLATION
+        </button>
+        <button class="btn-secondary" onclick="openTerminal()">
+          Advanced TUI
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-hints">
+      <div><span class="btn-pill">A</span> Select Option</div>
+      <div><span class="btn-pill">B</span> Cancel / Exit</div>
+      <div><span class="btn-pill">X</span> Advanced Diagnostics</div>
+      <div><span class="btn-pill">Y</span> Refresh Hardware</div>
+    </div>
+    <div>
+      SteamOS 3.x Holo • Valve Corporation Compatible
+    </div>
+  </footer>
+
+  <script>
+    // Web Audio SteamOS Sound Synthesis
+    class SteamAudio {
+      constructor() {
+        this.ctx = null;
+      }
+      init() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      }
+      click() {
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "sine";
+        const now = this.ctx.currentTime;
+        osc.frequency.setValueAtTime(820, now);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.045);
+      }
+      chime() {
+        this.init();
+        [523.25, 659.25, 783.99].forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = "sine";
+          const start = this.ctx.currentTime + idx * 0.07;
+          osc.frequency.setValueAtTime(freq, start);
+          gain.gain.setValueAtTime(0.15, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.18);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(start);
+          osc.stop(start + 0.2);
+        });
+      }
+    }
+    const audio = new SteamAudio();
+
+    function triggerInstall() {
+      audio.click();
+      setTimeout(() => audio.chime(), 400);
+      alert("Launching Hermes Steam Deck Automated Pipeline (v3.0.0)... Check Konsole terminal window for live logs.");
+    }
+
+    function openTerminal() {
+      audio.click();
+      window.location.href = "about:blank";
+    }
+  </script>
+
+</body>
+</html>

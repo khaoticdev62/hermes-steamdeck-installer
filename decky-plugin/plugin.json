@@ -2,6 +2,6 @@
   "name": "Hermes Command Center",
   "author": "khaoticdev62",
   "flags": ["root"],
-  "description": "Handheld AI command center for SteamOS — Streaming chat, active game auto-detection, ProtonDB 1-click fixes, and Dev Station controls.",
-  "version": "2.3.0"
+  "description": "AAA Handheld AI Command Center for SteamOS — Steam Audio SFX, active game auto-detection, ProtonDB 1-click fixes, and Dev Station controls.",
+  "version": "3.0.0"
 }
