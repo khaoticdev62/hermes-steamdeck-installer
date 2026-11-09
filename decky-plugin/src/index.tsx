@@ -155,7 +155,7 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
 
   // Chat Tab State
   const [prompt, setPrompt] = useState("");
-  const [response, setResponse] = useState("Hermes Handheld Assistant is ready.");
+  const [response, setResponse] = useState("HermDeck Handheld Assistant is ready.");
   const [loading, setLoading] = useState(false);
 
   // Game Ops Tab State
@@ -278,7 +278,7 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
       steamAudio.playSuccessChime();
 
       serverApi.toaster.toast({
-        title: "Hermes Assistant",
+        title: "HermDeck Assistant",
         body: reply.length > 60 ? reply.substring(0, 57) + "..." : reply,
       });
     } catch (e: any) {
@@ -364,7 +364,7 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
       });
       steamAudio.playSuccessChime();
       serverApi.toaster.toast({
-        title: "Hermes Settings",
+        title: "HermDeck Settings",
         body: "Settings saved successfully.",
       });
     } catch (e) {
@@ -400,7 +400,7 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
   };
 
   return (
-    <PanelSection title="Hermes Command Center (v3.0.0)">
+    <PanelSection title="HermDeck Command Center (v3.0.0)">
       {/* 4-Tab Valve Navigation Strip with Gamepad Focus Rings */}
       <PanelSectionRow>
         <div style={{ display: "flex", gap: "6px", width: "100%", marginBottom: "12px", fontFamily: steamTokens.fontFamily }}>
@@ -799,7 +799,7 @@ const HermesContent: FC<{ serverApi: ServerAPI }> = ({ serverApi }) => {
 
 export default definePlugin((serverApi: ServerAPI) => {
   return {
-    title: <div className={staticClasses.Title}>Hermes Assistant</div>,
+    title: <div className={staticClasses.Title}>HermDeck</div>,
     content: <HermesContent serverApi={serverApi} />,
     icon: <FaRobot />,
   };

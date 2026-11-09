@@ -14,7 +14,9 @@ if not STEAM_DIR.is_dir():
     STEAM_DIR = Path.home() / ".local" / "share" / "Steam"
 
 TEMPLATES_DIR = STEAM_DIR / "controller_base" / "templates"
-TEMPLATE_SRC = Path(__file__).resolve().parent.parent / "assets" / "controller_templates" / "hermes_gamepad_template.vdf"
+TEMPLATE_SRC = Path(__file__).resolve().parent.parent / "assets" / "controller_templates" / "hermdeck_gamepad_template.vdf"
+if not TEMPLATE_SRC.is_file():
+    TEMPLATE_SRC = Path(__file__).resolve().parent.parent / "assets" / "controller_templates" / "hermes_gamepad_template.vdf"
 
 
 def compute_app_id(exe: str, app_name: str) -> int:

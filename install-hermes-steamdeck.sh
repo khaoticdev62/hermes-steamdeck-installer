@@ -15,7 +15,7 @@ LOG_FILE="${LOG_DIR}/installer.log"
 mkdir -p "${LOG_DIR}"
 exec > >(tee -a "${LOG_FILE}") 2>&1
 
-APP_TITLE="Hermes Agent — Steam Deck AAA Suite"
+APP_TITLE="HermDeck Installer — Steam Deck AAA Suite"
 
 # 24-bit TrueColor SteamOS Terminal Colors
 RED='\033[0;31m'
@@ -415,7 +415,7 @@ main() {
             if [[ -z "${choice}" ]]; then exit 0; fi
         else
             echo -e "\n${STEAM_BLUE}╭──────────────────────────────────────────────────────────────────╮${NC}"
-            echo -e "${STEAM_BLUE}│${NC}  ${BOLD}${STEAM_CYAN}☤ HERMES AGENT — STEAM DECK ULTIMATE EDITION (v${SCRIPT_VERSION} AAA)${NC}       ${STEAM_BLUE}│${NC}"
+            echo -e "${STEAM_BLUE}│${NC}  ${BOLD}${STEAM_CYAN}☤ HERMDECK INSTALLER — STEAM DECK ULTIMATE EDITION (v${SCRIPT_VERSION} AAA)${NC}   ${STEAM_BLUE}│${NC}"
             echo -e "${STEAM_BLUE}│${NC}  ${STEAM_GOLD}SteamOS 3.x Verified • Rootless User-Space • Handheld AI${NC}       ${STEAM_BLUE}│${NC}"
             echo -e "${STEAM_BLUE}╰──────────────────────────────────────────────────────────────────╯${NC}"
             echo -e "  ${BOLD}${STEAM_CYAN}0)${NC} 🌐 ${BOLD}Launch SteamOS HTML5 First-Time Setup Wizard${NC}"

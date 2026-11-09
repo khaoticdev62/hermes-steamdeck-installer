@@ -1,7 +1,7 @@
 {
-  "name": "Hermes Command Center",
+  "name": "HermDeck Command Center",
   "author": "khaoticdev62",
   "flags": ["root"],
-  "description": "AAA Handheld AI Command Center for SteamOS — Steam Audio SFX, active game auto-detection, ProtonDB 1-click fixes, and Dev Station controls.",
+  "description": "AAA Handheld AI Command Center for SteamOS — Powered by HermDeck Installer.",
   "version": "3.0.0"
 }

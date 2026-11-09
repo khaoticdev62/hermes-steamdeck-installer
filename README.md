@@ -1,4 +1,4 @@
-# ☤ Hermes Agent — Steam Deck Ultimate Edition (v3.0.0 AAA)
+# ☤ HermDeck Installer — Steam Deck Ultimate Edition (v3.0.0 AAA)
 
 <div align="center">
 
@@ -9,7 +9,7 @@
 [![No Sudo Required](https://img.shields.io/badge/Rootless-100%25%20Home--Dir-orange?style=for-the-badge)](README.md)
 [![Handheld Ready](https://img.shields.io/badge/Handheld-1280x800%20AAA-blueviolet?style=for-the-badge)](README.md)
 
-**Turn your Steam Deck into an official Valve-grade autonomous handheld AI companion and portable development workstation.**
+**Turn your Steam Deck into an official Valve-grade autonomous handheld AI companion and portable development workstation with HermDeck Installer.**
 
 [Quick Start](#-quick-start-30-seconds) • [Setup Wizard](#-steamos-first-time-setup-wizard) • [Gaming Mode & Decky](#-gaming-mode-companion--decky-command-center) • [Developer Studio](#-developer-studio-suite) • [Handheld Mapping](#-steam-input-handheld-mapping) • [Clean Uninstaller](#-clean-uninstaller--storage-pruning)
 
@@ -22,10 +22,10 @@
 Switch your Steam Deck to **Desktop Mode** (*Steam Button > Power > Switch to Desktop*), open **Konsole**, and paste this single command:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/khaoticdev62/hermes-steamdeck-installer/main/install-hermes-steamdeck.sh | bash
+curl -fsSL https://raw.githubusercontent.com/khaoticdev62/hermes-steamdeck-installer/main/install-hermdeck.sh | bash
 ```
 
-> **Prefer a pre-packaged tarball?** Download [`hermes-steamdeck.tar.gz`](https://github.com/khaoticdev62/hermes-steamdeck-installer/releases/latest/download/hermes-steamdeck.tar.gz), extract it with `tar -xzf hermes-steamdeck.tar.gz`, and run `./install-hermes-steamdeck.sh`.
+> **Prefer a pre-packaged tarball?** Download [`hermdeck-steamdeck.tar.gz`](https://github.com/khaoticdev62/hermes-steamdeck-installer/releases/latest/download/hermdeck-steamdeck.tar.gz) (or `hermes-steamdeck.tar.gz`), extract it with `tar -xzf hermdeck-steamdeck.tar.gz`, and run `./install-hermdeck.sh`.
 
 ---
 
@@ -50,11 +50,11 @@ Experience a native setup process matching official SteamOS system menus:
 
 SteamOS is an immutable, read-only operating system. Installing traditional dev tools or AI models often breaks after SteamOS updates. 
 
-**Hermes Steam Deck Ultimate Edition** runs **100% in user-space (`/home/deck`)**:
+**HermDeck Installer** runs **100% in user-space (`/home/deck`)**:
 * 🛡️ **Zero Root Modification:** Never touches `steamos-readonly` — completely immune to system wipes during SteamOS updates.
 * 🎮 **Gaming Mode First-Class Citizen:** Injects directly into your Steam library with custom artwork and embeds into the Decky Quick Access Menu (`...` button).
 * ⚡ **Adaptive In-Game AI:** Switches between a lightweight 3B model during games (to prevent RAM stutters) and a full 7B/cloud model when idle.
-* 🎙️ **Hands-Free Voice:** Hold a back paddle to talk to Hermes while playing; hear replies through your speakers with natural neural TTS.
+* 🎙️ **Hands-Free Voice:** Hold a back paddle to talk to HermDeck while playing; hear replies through your speakers with natural neural TTS.
 * 🛠️ **Full Handheld Dev Studio:** Run browser-based VS Code, Godot 4, Distrobox Arch containers, and SSH into your Deck from your laptop.
 
 ---
@@ -112,11 +112,11 @@ gio set ~/Desktop/Hermes-Setup.desktop metadata::trusted true
 <div align="center">
 
 ![Steam Gaming Mode & Decky Loader](docs/screenshots/gaming-mode-decky.png)
-*Hermes Handheld Command Center v3.0.0 (AAA Edition) running inside the Decky Loader Quick Access Menu (`...` button) over Cyberpunk 2077, displaying Motiva Sans typography, Web Audio SFX synthesis, active game auto-detection, ProtonDB Gold rating, 1-click launch flags, and Steam Deck glyph navigation footers.*
+*HermDeck Command Center v3.0.0 (AAA Edition) running inside the Decky Loader Quick Access Menu (`...` button) over Cyberpunk 2077, displaying Motiva Sans typography, Web Audio SFX synthesis, active game auto-detection, ProtonDB Gold rating, 1-click launch flags, and Steam Deck glyph navigation footers.*
 
 </div>
 
-The **Hermes Decky Loader Plugin v3.0.0** transforms your Quick Access Menu (`...` button) into an official Valve-grade in-game command center:
+The **HermDeck Decky Loader Plugin v3.0.0** transforms your Quick Access Menu (`...` button) into an official Valve-grade in-game command center:
 
 | Tab | Features & Capabilities | Handheld Action |
 | :--- | :--- | :--- |
@@ -132,15 +132,15 @@ The **Hermes Decky Loader Plugin v3.0.0** transforms your Quick Access Menu (`..
 <div align="center">
 
 ![Steam Input Radial Touch Menu Profile](docs/screenshots/steam-input-radial.png)
-*Official Steam Input controller profile for Hermes: Left Trackpad 5-Way Radial Touch Menu, Right Trackpad trackball mouse, and L4/R4 grip paddles.*
+*Official Steam Input controller profile for HermDeck: Left Trackpad 5-Way Radial Touch Menu, Right Trackpad trackball mouse, and L4/R4 grip paddles.*
 
 </div>
 
-When launching Hermes Agent in Steam Gaming Mode, the official Steam Input profile maps the Deck's controls:
+When launching HermDeck in Steam Gaming Mode, the official Steam Input profile maps the Deck's controls:
 
-| Control | Action in Hermes Handheld Mode |
+| Control | Action in HermDeck Handheld Mode |
 | :--- | :--- |
-| **Left Trackpad (Radial Menu)** | 5-Way On-Screen Touch Menu: *Ask Hermes*, *Fix Game (ProtonDB)*, *Clean Compatdata*, *Backup Saves*, *Battery Status* |
+| **Left Trackpad (Radial Menu)** | 5-Way On-Screen Touch Menu: *Ask HermDeck*, *Fix Game (ProtonDB)*, *Clean Compatdata*, *Backup Saves*, *Battery Status* |
 | **Right Trackpad** | High-precision Trackball Mouse + Click to Select |
 | **L4 Grip Paddle** | Push-to-Talk Voice Dictation (`hermes-voice-listener`) |
 | **R4 Grip Paddle** | Toggle Steam On-Screen Virtual Keyboard |

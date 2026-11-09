@@ -1,0 +1,104 @@
+"controller_mappings"
+{
+	"version" "3"
+	"game_title" "HermDeck"
+	"description" "Official HermDeck Steam Deck Handheld Profile: Left Trackpad Radial Menu for HermDeck tools, Right Trackpad Mouse, L4 Voice Push-to-Talk, R4 Virtual Keyboard."
+	"creator" "khaoticdev62"
+
+	"group"
+	{
+		"id" "0"
+		"mode" "four_buttons"
+		"bindings"
+		{
+			"button_A" "key_press RETURN, Enter"
+			"button_B" "key_press ESCAPE, Escape"
+			"button_X" "key_press TAB, Tab"
+			"button_Y" "key_press SPACE, Space"
+		}
+	}
+
+	"group"
+	{
+		"id" "1"
+		"mode" "dpad"
+		"bindings"
+		{
+			"dpad_north" "key_press UP, Up"
+			"dpad_south" "key_press DOWN, Down"
+			"dpad_east" "key_press RIGHT, Right"
+			"dpad_west" "key_press LEFT, Left"
+		}
+	}
+
+	"group"
+	{
+		"id" "2"
+		"mode" "mouse"
+		"bindings"
+		{
+			"click" "mouse_button LEFT, Left Click"
+		}
+		"settings"
+		{
+			"sensitivity" "120"
+			"trackball" "1"
+		}
+	}
+
+	"group"
+	{
+		"id" "3"
+		"mode" "trigger"
+		"bindings"
+		{
+			"click" "mouse_button RIGHT, Right Click"
+		}
+	}
+
+	"group"
+	{
+		"id" "4"
+		"mode" "trigger"
+		"bindings"
+		{
+			"click" "mouse_button LEFT, Left Click"
+		}
+	}
+
+	"group"
+	{
+		"id" "5"
+		"mode" "radial_menu"
+		"bindings"
+		{
+			"menu_button_1" "key_press RETURN, Ask HermDeck"
+			"menu_button_2" "key_press 9, Fix Game (ProtonDB)"
+			"menu_button_3" "key_press 9, Clean Compatdata"
+			"menu_button_4" "key_press 9, Backup Saves"
+			"menu_button_5" "key_press 10, Battery Status"
+		}
+		"settings"
+		{
+			"radial_menu_click" "1"
+			"radial_menu_deadzone" "25"
+		}
+	}
+
+	"preset"
+	{
+		"id" "0"
+		"name" "HermDeck Handheld Master"
+		"group_source_bindings"
+		{
+			"0" "button_diamond"
+			"1" "dpad"
+			"2" "right_trackpad"
+			"3" "left_trigger"
+			"4" "right_trigger"
+			"5" "left_trackpad"
+			"button_L4" "key_press F12, Voice Push-to-Talk"
+			"button_R4" "key_press F11, Toggle On-Screen Keyboard"
+		}
+	}
+}

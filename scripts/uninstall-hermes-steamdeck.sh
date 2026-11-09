@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-#  Hermes Agent Steam Deck - Modular Clean Uninstaller & Rollback Tool
+#  HermDeck Installer Steam Deck - Modular Clean Uninstaller & Rollback Tool
 # ==============================================================================
 
 set -u
@@ -13,7 +13,7 @@ BOLD='\033[1m'
 NC='\033[0m'
 
 echo -e "${BOLD}${RED}====================================================================${NC}"
-echo -e "${BOLD}       Hermes Agent Steam Deck - Clean Uninstaller & Prune${NC}"
+echo -e "${BOLD}       HermDeck Installer Steam Deck - Clean Uninstaller & Prune${NC}"
 echo -e "${BOLD}${RED}====================================================================${NC}"
 
 # 1. Stop & Remove Systemd Services

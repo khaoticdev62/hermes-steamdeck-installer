@@ -83,9 +83,9 @@ def generate_poster():
     # Draw Caduceus emblem
     draw_caduceus(draw, 300, 360, scale=1.5, color=(103, 193, 245, 255))
 
-    # Text: HERMES
-    draw.text((300, 560), "HERMES", fill=(255, 255, 255, 255), anchor="mm", font_size=52)
-    draw.text((300, 610), "AGENT", fill=(103, 193, 245, 255), anchor="mm", font_size=36)
+    # Text: HERMDECK
+    draw.text((300, 560), "HERMDECK", fill=(255, 255, 255, 255), anchor="mm", font_size=48)
+    draw.text((300, 610), "INSTALLER", fill=(103, 193, 245, 255), anchor="mm", font_size=34)
     draw.text((300, 650), "STEAM DECK ULTIMATE EDITION", fill=(148, 163, 184, 255), anchor="mm", font_size=16)
 
     # Technical metadata badges
@@ -140,7 +140,7 @@ def generate_grid():
     draw_caduceus(draw, 200, 215, scale=1.3, color=(103, 193, 245, 255))
 
     # Right side: Typography
-    draw.text((420, 150), "HERMES AGENT", fill=(255, 255, 255, 255), font_size=46)
+    draw.text((420, 150), "HERMDECK INSTALLER", fill=(255, 255, 255, 255), font_size=40)
     draw.text((420, 205), "STEAM DECK ULTIMATE EDITION", fill=(103, 193, 245, 255), font_size=20)
     draw.text((420, 245), "Handheld AI Suite • SteamOS Ops • ProtonDB Auto-Fixes", fill=(148, 163, 184, 255), font_size=14)
 
@@ -204,12 +204,12 @@ def generate_logo():
 
     # Drop shadow
     shadow_offset = 6
-    draw.text((w // 2 + shadow_offset, 340 + shadow_offset), "HERMES", fill=(0, 0, 0, 180), anchor="mm", font_size=110)
-    draw.text((w // 2 + shadow_offset, 450 + shadow_offset), "AGENT", fill=(0, 0, 0, 180), anchor="mm", font_size=64)
+    draw.text((w // 2 + shadow_offset, 340 + shadow_offset), "HERMDECK", fill=(0, 0, 0, 180), anchor="mm", font_size=100)
+    draw.text((w // 2 + shadow_offset, 450 + shadow_offset), "INSTALLER", fill=(0, 0, 0, 180), anchor="mm", font_size=58)
 
     # Crisp text
-    draw.text((w // 2, 340), "HERMES", fill=(255, 255, 255, 255), anchor="mm", font_size=110)
-    draw.text((w // 2, 450), "AGENT", fill=(103, 193, 245, 255), anchor="mm", font_size=64)
+    draw.text((w // 2, 340), "HERMDECK", fill=(255, 255, 255, 255), anchor="mm", font_size=100)
+    draw.text((w // 2, 450), "INSTALLER", fill=(103, 193, 245, 255), anchor="mm", font_size=58)
     draw.text((w // 2, 520), "STEAM DECK SUITE", fill=(148, 163, 184, 255), anchor="mm", font_size=24)
 
     # Central winged emblem above text

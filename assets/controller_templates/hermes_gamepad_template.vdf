@@ -1,8 +1,8 @@
 "controller_mappings"
 {
 	"version" "3"
-	"game_title" "Hermes Agent"
-	"description" "Official Hermes Agent Steam Deck Handheld Profile: Left Trackpad Radial Menu for Hermes tools, Right Trackpad Mouse, L4 Voice Push-to-Talk, R4 Virtual Keyboard."
+	"game_title" "HermDeck"
+	"description" "Official HermDeck Steam Deck Handheld Profile: Left Trackpad Radial Menu for HermDeck tools, Right Trackpad Mouse, L4 Voice Push-to-Talk, R4 Virtual Keyboard."
 	"creator" "khaoticdev62"
 
 	"group"

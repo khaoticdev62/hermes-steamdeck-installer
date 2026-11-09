@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=Hermes Agent Suite (v3.0.0 AAA)
+Name=HermDeck Installer (v3.0.0 AAA)
 Comment=Automated Setup & Handheld Command Center for Steam Deck
 Exec=konsole -e bash -c "\"$HOME/install-hermes-steamdeck.sh\""
 Icon=steamdeck-gaming-return
