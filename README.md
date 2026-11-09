@@ -109,6 +109,13 @@ gio set ~/Desktop/Hermes-Setup.desktop metadata::trusted true
 
 ### 🎮 Steam Input Handheld Mapping
 
+<div align="center">
+
+![Steam Input Radial Touch Menu Profile](docs/screenshots/steam-input-radial.png)
+*Official Steam Input controller profile for Hermes: Left Trackpad 5-Way Radial Touch Menu, Right Trackpad trackball mouse, and L4/R4 grip paddles.*
+
+</div>
+
 When launching Hermes Agent in Steam Gaming Mode, the official Steam Input profile maps the Deck's controls:
 
 | Control | Action in Hermes Handheld Mode |
@@ -176,6 +183,13 @@ Transform your Steam Deck into a self-contained portable development studio:
 ---
 
 ## 🧹 Clean Uninstallation & Storage Prune
+
+<div align="center">
+
+![Modular Clean Uninstaller](docs/screenshots/uninstaller-menu.png)
+*Interactive modular uninstaller and storage pruner with zero data loss guarantee for personal game saves.*
+
+</div>
 
 To cleanly remove components or free up storage without touching personal game saves:
 
