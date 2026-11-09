@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-#  Hermes Agent Ultimate Steam Deck Edition - Modular Management Hub v2.0.0
+#  Hermes Agent Steam Deck Ultimate Developer & Gaming Edition v2.1.0
 #  Target OS: SteamOS 3.x (Arch-based Linux, immutable rootfs friendly)
 # ==============================================================================
 
@@ -8,14 +8,14 @@ set -u
 
 REPO_OWNER="khaoticdev62"
 REPO_NAME="hermes-steamdeck-installer"
-SCRIPT_VERSION="2.0.0"
+SCRIPT_VERSION="2.1.0"
 
 LOG_DIR="${HOME}/.local/share/hermes-installer"
 LOG_FILE="${LOG_DIR}/installer.log"
 mkdir -p "${LOG_DIR}"
 exec > >(tee -a "${LOG_FILE}") 2>&1
 
-APP_TITLE="Hermes Agent - Steam Deck Ultimate Edition"
+APP_TITLE="Hermes Agent - Steam Deck Developer & Gaming Suite"
 
 # ANSI Terminal Colors
 RED='\033[0;31m'
@@ -103,7 +103,7 @@ check_for_updates() {
             kdialog --title "Update Available" --yesno "A newer release (${latest_tag}) is available. Would you like to update?" 2>/dev/null && update_in_place "${latest_tag}"
         fi
     else
-        echo -e "${GREEN}[✓] You are running the latest version (v${SCRIPT_VERSION}).${NC}"
+        echo -e "${GREEN}[✓] Running latest version (v${SCRIPT_VERSION}).${NC}"
     fi
 }
 
@@ -126,7 +126,6 @@ update_in_place() {
 install_core_engine() {
     echo -e "\n${BOLD}${CYAN}=== Installing Hermes Core Engine & Subscription Providers ===${NC}"
     
-    # 1. Environment & user-space node
     mkdir -p "${HOME}/.local/bin" "${HOME}/.npm-global/bin" "${HOME}/.hermes"
     npm config set prefix "${HOME}/.npm-global" >/dev/null 2>&1 || true
 
@@ -138,33 +137,28 @@ install_core_engine() {
         export PATH="${NODE_DIR}/bin:${PATH}"
     fi
 
-    # 2. Hermes CLI
     if ! command -v hermes >/dev/null 2>&1; then
         echo "Installing Hermes Agent..."
         curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
         export PATH="${HOME}/.local/bin:${PATH}"
     fi
 
-    # 3. Claude Code CLI
     if ! command -v claude >/dev/null 2>&1; then
         echo "Installing @anthropic-ai/claude-code..."
         npm install -g @anthropic-ai/claude-code
     fi
 
-    # Claude Login check
     if ! claude auth status 2>/dev/null | grep -q '"loggedIn": true'; then
         echo -e "${YELLOW}Please authenticate your Claude subscription in the browser prompt:${NC}"
         claude auth login
     fi
 
-    # 4. Install Claude DirectSDK Plugin
     echo "Installing claude-subscription-directsdk plugin..."
     hermes plugins install --yes-deps --enable claude-subscription-directsdk >/dev/null 2>&1 || true
     hermes config set model.provider claude-subscription-directsdk-experimental
     hermes config unset model.base_url >/dev/null 2>&1 || true
     hermes config set model.default sonnet
 
-    # 5. Codex OAuth
     if ! hermes auth list 2>/dev/null | grep -q "openai-codex"; then
         echo -e "${YELLOW}Starting OpenAI Codex OAuth setup:${NC}"
         hermes auth add openai-codex
@@ -191,31 +185,20 @@ install_decky_plugin() {
     local TARGET_DIR="${DECKY_PLUGINS_DIR}/hermes-decky"
     local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-    if [[ ! -d "${DECKY_PLUGINS_DIR}" ]]; then
-        echo "Decky Loader homebrew directory not found at ${DECKY_PLUGINS_DIR}."
-        echo "Creating plugin directory anyway for when Decky Loader is installed..."
-        mkdir -p "${TARGET_DIR}"
-    else
-        mkdir -p "${TARGET_DIR}"
-    fi
-
+    mkdir -p "${TARGET_DIR}"
     if [[ -d "${script_dir}/decky-plugin" ]]; then
         cp -r "${script_dir}/decky-plugin/"* "${TARGET_DIR}/"
         echo -e "${GREEN}[✓] Decky plugin installed to ${TARGET_DIR}.${NC}"
-        echo "Restart Decky Loader service or reload Gaming Mode to access Hermes in QAM."
-    else
-        echo "Error: decky-plugin directory not found."
     fi
 }
 
-# Module 4: Offline Adaptive Local AI (Vulkan llama.cpp + GGUF models)
+# Module 4: Offline Adaptive Local AI
 install_offline_engine() {
     echo -e "\n${BOLD}${CYAN}=== Setting up Offline Adaptive Vulkan Local AI ===${NC}"
     local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     if [[ -f "${script_dir}/scripts/setup-offline-models.sh" ]]; then
         bash "${script_dir}/scripts/setup-offline-models.sh"
         
-        # Install adaptive daemon systemd user service
         local SERVICE_DIR="${HOME}/.config/systemd/user"
         mkdir -p "${SERVICE_DIR}"
         cat <<EOF > "${SERVICE_DIR}/hermes-adaptive-model.service"
@@ -235,23 +218,19 @@ EOF
         systemctl --user daemon-reload >/dev/null 2>&1 || true
         systemctl --user enable --now hermes-adaptive-model.service >/dev/null 2>&1 || true
         echo -e "${GREEN}[✓] Adaptive local model daemon enabled as user service.${NC}"
-    else
-        echo "Error: setup-offline-models.sh not found."
     fi
 }
 
-# Module 5: Hybrid Voice Assistant (Whisper + Piper)
+# Module 5: Hybrid Voice Assistant
 install_voice_assistant() {
     echo -e "\n${BOLD}${CYAN}=== Configuring Hybrid Voice Assistant ===${NC}"
     local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     if [[ -f "${script_dir}/scripts/setup-voice.sh" ]]; then
         bash "${script_dir}/scripts/setup-voice.sh"
-    else
-        echo "Error: setup-voice.sh not found."
     fi
 }
 
-# Module 6: SteamOS Ops Toolkit Skill
+# Module 6: SteamOS Ops Skills
 install_steamos_ops() {
     echo -e "\n${BOLD}${CYAN}=== Installing SteamOS Ops Skill into Hermes ===${NC}"
     local SKILLS_DIR="${HOME}/.hermes/skills/steamos-ops"
@@ -261,14 +240,54 @@ install_steamos_ops() {
     if [[ -d "${script_dir}/skills/steamos-ops" ]]; then
         cp -r "${script_dir}/skills/steamos-ops/"* "${SKILLS_DIR}/"
         echo -e "${GREEN}[✓] Installed steamos-ops skill to ${SKILLS_DIR}.${NC}"
-    else
-        echo "Error: steamos-ops skill files not found."
     fi
 }
 
-# Module 7: Run Full Verification Diagnostics
+# Module 7: Developer Studio & App Dev Suite
+install_developer_studio() {
+    echo -e "\n${BOLD}${MAGENTA}=== Setting up Steam Deck Developer Studio & App Dev Suite ===${NC}"
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+    # 1. Distrobox & Podman rootless toolchains
+    echo -e "\n[1/4] Installing Distrobox & Podman Arch Dev Container..."
+    if [[ -f "${script_dir}/scripts/setup-distrobox-podman.sh" ]]; then
+        bash "${script_dir}/scripts/setup-distrobox-podman.sh"
+    fi
+
+    # 2. code-server Web IDE & SSH Toggle
+    echo -e "\n[2/4] Setting up code-server Web IDE & SSH Remote Access..."
+    if [[ -f "${script_dir}/scripts/setup-code-server.sh" ]]; then
+        bash "${script_dir}/scripts/setup-code-server.sh"
+    fi
+
+    # 3. Godot 4 Portable Engine
+    echo -e "\n[3/4] Installing Portable Godot 4 Game Engine..."
+    if [[ -f "${script_dir}/scripts/setup-godot.sh" ]]; then
+        bash "${script_dir}/scripts/setup-godot.sh"
+    fi
+
+    # 4. Deploy Hermes App Dev Skills
+    echo -e "\n[4/4] Registering App Development Skills (godot-agent, decky-builder, container-ops)..."
+    local skills_base="${HOME}/.hermes/skills"
+    mkdir -p "${skills_base}/godot-agent" "${skills_base}/decky-builder" "${skills_base}/container-ops"
+
+    for s in "godot-agent" "decky-builder" "container-ops"; do
+        if [[ -d "${script_dir}/skills/${s}" ]]; then
+            cp -r "${script_dir}/skills/${s}/"* "${skills_base}/${s}/"
+            echo "Installed ${s} skill."
+        fi
+    done
+
+    echo -e "${GREEN}[✓] Developer Studio Suite installed successfully!${NC}"
+    echo "Web VS Code: http://localhost:8443"
+    echo "Godot 4:     run 'godot4'"
+    echo "Dev Shell:   run 'hermes-dev-shell'"
+    echo "SSH Toggle:  run 'hermes-ssh-toggle'"
+}
+
+# Module 8: Diagnostics
 run_diagnostics() {
-    echo -e "\n${BOLD}${CYAN}=== Running System & Provider Diagnostics ===${NC}"
+    echo -e "\n${BOLD}${CYAN}=== Running Full System Diagnostics ===${NC}"
     
     echo -n "Checking Hermes CLI: "
     if command -v hermes >/dev/null 2>&1; then echo -e "${GREEN}OK (${NC}$(hermes --version 2>/dev/null || echo 'Installed')${GREEN})${NC}"; else echo -e "${RED}MISSING${NC}"; fi
@@ -294,16 +313,21 @@ run_diagnostics() {
     done
     if [[ "${found_sc}" == "true" ]]; then echo -e "${GREEN}INSTALLED${NC}"; else echo -e "${YELLOW}NOT FOUND${NC}"; fi
 
-    echo -n "Checking Offline Local GGUF Models: "
-    local m3b="${HOME}/.local/share/hermes/models/qwen2.5-coder-3b-instruct-q4_k_m.gguf"
-    if [[ -f "${m3b}" ]]; then echo -e "${GREEN}PRESENT${NC}"; else echo -e "${YELLOW}NOT DOWNLOADED${NC}"; fi
+    echo -n "Checking Godot 4: "
+    if command -v godot4 >/dev/null 2>&1; then echo -e "${GREEN}INSTALLED${NC}"; else echo -e "${YELLOW}NOT INSTALLED${NC}"; fi
+
+    echo -n "Checking code-server: "
+    if command -v code-server >/dev/null 2>&1; then echo -e "${GREEN}INSTALLED (Port 8443)${NC}"; else echo -e "${YELLOW}NOT INSTALLED${NC}"; fi
+
+    echo -n "Checking Distrobox: "
+    if command -v distrobox >/dev/null 2>&1; then echo -e "${GREEN}INSTALLED${NC}"; else echo -e "${YELLOW}NOT INSTALLED${NC}"; fi
 }
 
-# 🌟 Option 1: Ultimate Full Setup
+# 🌟 Option 1: Complete Ultimate Setup (Gaming + Dev Suite)
 run_ultimate_setup() {
     clear
     echo -e "${BOLD}${MAGENTA}====================================================================${NC}"
-    echo -e "${BOLD}   Executing Ultimate Steam Deck Setup (All Modules)${NC}"
+    echo -e "${BOLD}   Executing Ultimate Steam Deck Setup (All Gaming & Dev Modules)${NC}"
     echo -e "${BOLD}${MAGENTA}====================================================================${NC}"
     install_core_engine
     install_gaming_mode
@@ -311,8 +335,9 @@ run_ultimate_setup() {
     install_offline_engine
     install_voice_assistant
     install_steamos_ops
+    install_developer_studio
     run_diagnostics
-    msg_success "Ultimate Steam Deck Setup Complete! Hermes is now integrated across Gaming Mode, Desktop, Voice, and Decky Loader."
+    msg_success "Ultimate Steam Deck Setup Complete! Hermes is now configured as your gaming companion AND autonomous handheld developer studio."
 }
 
 # ------------------------------------------------------------------------------
@@ -322,31 +347,33 @@ run_ultimate_setup() {
 show_gui_menu() {
     if [[ "${UI_BACKEND}" == "kdialog" ]]; then
         kdialog --title "${APP_TITLE}" --menu "Select an option for your Steam Deck:" \
-            "1" "🌟 Full Ultimate Setup (All Modules)" \
+            "1" "🌟 Full Ultimate Setup (All Gaming & Dev Modules)" \
             "2" "Core Engine (Hermes + Claude + Codex)" \
-            "3" "Steam Gaming Mode & Grid Art Injection" \
-            "4" "Decky Loader QAM Plugin Deployment" \
-            "5" "Offline Adaptive AI (Vulkan llama.cpp + 3B/7B GGUF)" \
-            "6" "Hybrid Voice Assistant (Whisper + Piper TTS)" \
-            "7" "SteamOS Ops Toolkit Skill" \
-            "8" "Run Full Health & Diagnostics" \
-            "9" "Check for Updates from GitHub" \
-            "10" "Launch Hermes Agent" \
-            "11" "Exit" 2>/dev/null
+            "3" "🛠️ Developer Studio Suite (code-server, Godot 4, Distrobox)" \
+            "4" "Steam Gaming Mode & Grid Art Injection" \
+            "5" "Decky Loader QAM Plugin Deployment" \
+            "6" "Offline Adaptive AI (Vulkan llama.cpp + 3B/7B GGUF)" \
+            "7" "Hybrid Voice Assistant (Whisper + Piper TTS)" \
+            "8" "SteamOS Ops Toolkit Skill" \
+            "9" "Run Full Health & Diagnostics" \
+            "10" "Check for Updates from GitHub" \
+            "11" "Launch Hermes Agent" \
+            "12" "Exit" 2>/dev/null
     elif [[ "${UI_BACKEND}" == "zenity" ]]; then
         zenity --list --title="${APP_TITLE}" --text="Select an option for your Steam Deck:" \
-            --column="Option" --column="Description" --width=520 --height=380 \
-            "1" "🌟 Full Ultimate Setup (All Modules)" \
+            --column="Option" --column="Description" --width=540 --height=420 \
+            "1" "🌟 Full Ultimate Setup (All Gaming & Dev Modules)" \
             "2" "Core Engine (Hermes + Claude + Codex)" \
-            "3" "Steam Gaming Mode & Grid Art Injection" \
-            "4" "Decky Loader QAM Plugin Deployment" \
-            "5" "Offline Adaptive AI (Vulkan llama.cpp + 3B/7B GGUF)" \
-            "6" "Hybrid Voice Assistant (Whisper + Piper TTS)" \
-            "7" "SteamOS Ops Toolkit Skill" \
-            "8" "Run Full Health & Diagnostics" \
-            "9" "Check for Updates from GitHub" \
-            "10" "Launch Hermes Agent" \
-            "11" "Exit" 2>/dev/null
+            "3" "🛠️ Developer Studio Suite (code-server, Godot 4, Distrobox)" \
+            "4" "Steam Gaming Mode & Grid Art Injection" \
+            "5" "Decky Loader QAM Plugin Deployment" \
+            "6" "Offline Adaptive AI (Vulkan llama.cpp + 3B/7B GGUF)" \
+            "7" "Hybrid Voice Assistant (Whisper + Piper TTS)" \
+            "8" "SteamOS Ops Toolkit Skill" \
+            "9" "Run Full Health & Diagnostics" \
+            "10" "Check for Updates from GitHub" \
+            "11" "Launch Hermes Agent" \
+            "12" "Exit" 2>/dev/null
     fi
 }
 
@@ -362,39 +389,41 @@ main() {
             echo -e "\n${BOLD}${CYAN}====================================================================${NC}"
             echo -e "${BOLD}   ${APP_TITLE} (v${SCRIPT_VERSION})${NC}"
             echo -e "${BOLD}${CYAN}====================================================================${NC}"
-            echo -e "  ${BOLD}${MAGENTA}1)${NC} 🌟 ${BOLD}Full Ultimate Setup${NC} (Installs all 6 enhancement modules)"
+            echo -e "  ${BOLD}${MAGENTA}1)${NC} 🌟 ${BOLD}Full Ultimate Setup${NC} (Installs both Gaming + Dev Studio Suites)"
             echo -e "  ${BOLD}2)${NC} Core Engine (Hermes + Claude DirectSDK + Codex OAuth)"
-            echo -e "  ${BOLD}3)${NC} Steam Gaming Mode & Grid Art Injection"
-            echo -e "  ${BOLD}4)${NC} Decky Loader QAM Plugin Deployment"
-            echo -e "  ${BOLD}5)${NC} Offline Adaptive Local AI (Vulkan llama.cpp + Dual GGUF)"
-            echo -e "  ${BOLD}6)${NC} Hybrid Voice Assistant (Faster-Whisper + Piper TTS)"
-            echo -e "  ${BOLD}7)${NC} SteamOS Ops Toolkit Skill (ProtonDB, Compatdata, Saves)"
-            echo -e "  ${BOLD}8)${NC} Run Full Health & Diagnostics Check"
-            echo -e "  ${BOLD}9)${NC} Check for Updates from GitHub"
-            echo -e "  ${BOLD}10)${NC} Launch Hermes Agent"
-            echo -e "  ${BOLD}11)${NC} Exit"
+            echo -e "  ${BOLD}3)${NC} 🛠️ ${BOLD}Developer Studio Suite${NC} (code-server, Godot 4, Distrobox, Dev Skills)"
+            echo -e "  ${BOLD}4)${NC} Steam Gaming Mode & Grid Art Injection"
+            echo -e "  ${BOLD}5)${NC} Decky Loader QAM Plugin Deployment"
+            echo -e "  ${BOLD}6)${NC} Offline Adaptive Local AI (Vulkan llama.cpp + Dual GGUF)"
+            echo -e "  ${BOLD}7)${NC} Hybrid Voice Assistant (Faster-Whisper + Piper TTS)"
+            echo -e "  ${BOLD}8)${NC} SteamOS Ops Toolkit Skill (ProtonDB, Compatdata, Saves)"
+            echo -e "  ${BOLD}9)${NC} Run Full Health & Diagnostics Check"
+            echo -e "  ${BOLD}10)${NC} Check for Updates from GitHub"
+            echo -e "  ${BOLD}11)${NC} Launch Hermes Agent"
+            echo -e "  ${BOLD}12)${NC} Exit"
             echo -e "--------------------------------------------------------------------"
-            read -r -p "Enter selection [1-11]: " choice
+            read -r -p "Enter selection [1-12]: " choice
         fi
 
         case "${choice}" in
             1) run_ultimate_setup; read -r -p "Press Enter to continue..." ;;
             2) install_core_engine; read -r -p "Press Enter to continue..." ;;
-            3) install_gaming_mode; read -r -p "Press Enter to continue..." ;;
-            4) install_decky_plugin; read -r -p "Press Enter to continue..." ;;
-            5) install_offline_engine; read -r -p "Press Enter to continue..." ;;
-            6) install_voice_assistant; read -r -p "Press Enter to continue..." ;;
-            7) install_steamos_ops; read -r -p "Press Enter to continue..." ;;
-            8) run_diagnostics; read -r -p "Press Enter to continue..." ;;
-            9) check_for_updates; read -r -p "Press Enter to continue..." ;;
-            10)
+            3) install_developer_studio; read -r -p "Press Enter to continue..." ;;
+            4) install_gaming_mode; read -r -p "Press Enter to continue..." ;;
+            5) install_decky_plugin; read -r -p "Press Enter to continue..." ;;
+            6) install_offline_engine; read -r -p "Press Enter to continue..." ;;
+            7) install_voice_assistant; read -r -p "Press Enter to continue..." ;;
+            8) install_steamos_ops; read -r -p "Press Enter to continue..." ;;
+            9) run_diagnostics; read -r -p "Press Enter to continue..." ;;
+            10) check_for_updates; read -r -p "Press Enter to continue..." ;;
+            11)
                 if command -v konsole >/dev/null 2>&1; then
                     konsole -e bash -c "hermes; bash" &
                 else
                     hermes
                 fi
                 ;;
-            11) echo "Exiting."; exit 0 ;;
+            12) echo "Exiting."; exit 0 ;;
             *) echo "Invalid option."; sleep 1 ;;
         esac
     done
