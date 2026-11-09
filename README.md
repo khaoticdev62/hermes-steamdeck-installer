@@ -62,26 +62,22 @@ curl -fsSL https://raw.githubusercontent.com/khaoticdev62/hermes-steamdeck-insta
 ### Step 3: Choose What to Install
 The interactive management hub will appear:
 
-```text
-====================================================================
-   Hermes Agent - Steam Deck Developer & Gaming Suite (v2.1.0)
-====================================================================
-  1) 🌟 Full Ultimate Setup (Installs both Gaming + Dev Studio Suites)
-  2) Core Engine (Hermes + Claude DirectSDK + Codex OAuth)
-  3) 🛠️ Developer Studio Suite (code-server, Godot 4, Distrobox, Dev Skills)
-  4) Steam Gaming Mode & Grid Art Injection
-  5) Decky Loader QAM Plugin Deployment
-  6) Offline Adaptive Local AI (Vulkan llama.cpp + Dual GGUF)
-  7) Hybrid Voice Assistant (Faster-Whisper + Piper TTS)
-  8) SteamOS Ops Toolkit Skill (ProtonDB, Compatdata, Saves)
-  9) Run Full Health & Diagnostics Check
-  10) Check for Updates from GitHub
-  11) Launch Hermes Agent
-  12) Exit
-====================================================================
-```
+<div align="center">
 
-* **Option 1 ("🌟 Full Ultimate Setup"):** Recommended. Automatically installs and configures all gaming and developer modules.
+![Interactive Management Hub](docs/screenshots/installer-menu.png)
+*The interactive terminal management hub running inside SteamOS Konsole, presenting modular options for both gaming enhancements and developer tools.*
+
+</div>
+
+* **Option 1 ("🌟 Full Ultimate Setup"):** Recommended. Automatically installs and configures all gaming and developer modules with live progress tracking:
+
+<div align="center">
+
+![Automated Installation Progress](docs/screenshots/installer-progress.png)
+*Live automated installation pipeline running through environment checks, rootless toolchain setup, Claude & Codex authentication, and end-to-end diagnostics.*
+
+</div>
+
 * **Or pick individual modules (Options 2–8)** to customize your setup.
 
 ### Step 4: Add Desktop Shortcut (Optional)
@@ -94,6 +90,13 @@ gio set ~/Desktop/Hermes-Setup.desktop metadata::trusted true
 ---
 
 ## 🎮 Gaming Mode Companion
+
+<div align="center">
+
+![Steam Gaming Mode & Decky Loader](docs/screenshots/gaming-mode-decky.png)
+*Hermes Agent integrated directly into the Steam Gaming Mode library with custom Steam Grid artwork, alongside the live Decky Loader Quick Access Menu (`...` button) overlay.*
+
+</div>
 
 | Feature | Description | How to Use |
 | :--- | :--- | :--- |
@@ -108,6 +111,13 @@ gio set ~/Desktop/Hermes-Setup.desktop metadata::trusted true
 ## 🛠️ Developer Studio Suite
 
 Transform your Steam Deck into a self-contained portable development studio:
+
+<div align="center">
+
+![Handheld Developer Studio](docs/screenshots/developer-studio.png)
+*Browser-based VS Code (`code-server`) running directly on the Steam Deck, editing a Godot 4 project while running autonomous headless tests via Hermes Agent.*
+
+</div>
 
 ### 1. Dual-Mode VS Code IDE
 * **Browser-Based `code-server`:** Runs on port `8443` as an automated background service. Open `http://localhost:8443` on your Deck or `http://steamdeck.local:8443` on your laptop/iPad.
