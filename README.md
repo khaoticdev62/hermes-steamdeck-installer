@@ -1,4 +1,4 @@
-# ☤ Hermes Agent — Steam Deck Ultimate Edition
+# ☤ Hermes Agent — Steam Deck Ultimate Edition (v2.2.0)
 
 <div align="center">
 
@@ -101,10 +101,24 @@ gio set ~/Desktop/Hermes-Setup.desktop metadata::trusted true
 | Feature | Description | How to Use |
 | :--- | :--- | :--- |
 | **Steam Library Shortcut** | Injects Hermes into Steam with custom Grid, Banner, Hero, and Logo artwork. | Appears in your Steam Library under **Non-Steam Games**. |
+| **Official Controller Profile** | Left Trackpad Radial Menu for instant Hermes commands; Right Trackpad mouse; L4/R4 paddles for Voice & Keyboard. | Automatically applied to the Hermes Steam shortcut. |
 | **Decky Loader QAM Plugin** | Overlays Hermes in the Quick Access Menu (`...` button) over running games. | Press `...` button during any game > select **Hermes Assistant**. |
 | **Adaptive Dual-Tier AI** | Automatically monitors `gamescope`: drops to **Qwen 2.5 3B** (~2GB RAM) while gaming; scales to **Qwen 2.5 7B** when idle. | Fully automated background systemd user service. |
 | **Paddle Push-to-Talk** | Hold back paddle (L4/R4) to dictate speech; transcribes via **Faster-Whisper** and speaks back via **Piper Neural TTS**. | Run `hermes-voice-listener` or bind to paddle via Steam Input. |
 | **SteamOS Ops Toolkit** | Autonomous skills for ProtonDB fixes, cleaning orphaned prefixes, and save backups. | Ask Hermes: *"Fix Cyberpunk with ProtonDB"*, *"Clean unused compatdata"*. |
+
+### 🎮 Steam Input Handheld Mapping
+
+When launching Hermes Agent in Steam Gaming Mode, the official Steam Input profile maps the Deck's controls:
+
+| Control | Action in Hermes Handheld Mode |
+| :--- | :--- |
+| **Left Trackpad (Radial Menu)** | 5-Way On-Screen Touch Menu: *Ask Hermes*, *Fix Game (ProtonDB)*, *Clean Compatdata*, *Backup Saves*, *Battery Status* |
+| **Right Trackpad** | High-precision Trackball Mouse + Click to Select |
+| **L4 Grip Paddle** | Push-to-Talk Voice Dictation (`hermes-voice-listener`) |
+| **R4 Grip Paddle** | Toggle Steam On-Screen Virtual Keyboard |
+| **Triggers (RT / LT)** | Right Trigger = Left Click, Left Trigger = Right Click |
+| **Face Buttons (A / B / X / Y)** | A = Enter, B = Escape, X = Tab, Y = Space |
 
 ---
 
@@ -158,6 +172,21 @@ Transform your Steam Deck into a self-contained portable development studio:
 | `hermes-voice-listener` | Launch push-to-talk voice assistant |
 | `godot4` | Launch Godot 4 Game Engine |
 | `hermes model` | Interactive model provider picker |
+
+---
+
+## 🧹 Clean Uninstallation & Storage Prune
+
+To cleanly remove components or free up storage without touching personal game saves:
+
+```bash
+./scripts/uninstall-hermes-steamdeck.sh
+```
+
+Choose from:
+1. **🧹 Full Clean Uninstall:** Stops and cleans systemd user services, wipes Steam shortcuts and grid art, removes the Decky plugin, removes the Distrobox container, and removes all Hermes binaries. **Preserves your `~/GameSaveBackups/` archives intact.**
+2. **💾 Prune Models Only:** Purges the `~/.local/share/hermes/models/` folder to reclaim **~7 GB of disk space** while keeping Hermes and developer tools operational.
+3. **🛑 Deactivate Background Services:** Stops and masks all background daemons.
 
 ---
 
