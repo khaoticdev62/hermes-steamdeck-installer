@@ -1,4 +1,4 @@
-# ☤ Hermes Agent — Steam Deck Ultimate Edition (v2.2.0)
+# ☤ Hermes Agent — Steam Deck Ultimate Edition (v2.3.0)
 
 <div align="center">
 
@@ -89,23 +89,25 @@ gio set ~/Desktop/Hermes-Setup.desktop metadata::trusted true
 
 ---
 
-## 🎮 Gaming Mode Companion
+## 🎮 Gaming Mode Companion & Decky Command Center
 
 <div align="center">
 
 ![Steam Gaming Mode & Decky Loader](docs/screenshots/gaming-mode-decky.png)
-*Hermes Agent integrated directly into the Steam Gaming Mode library with custom Steam Grid artwork, alongside the live Decky Loader Quick Access Menu (`...` button) overlay.*
+*Hermes Handheld Command Center v2.3.0 running inside the Decky Loader Quick Access Menu (`...` button) over Cyberpunk 2077, displaying active game auto-detection, ProtonDB Gold rating, 1-click launch flags, live battery wattage & thermal telemetry, and dev toggles.*
 
 </div>
 
-| Feature | Description | How to Use |
+The **Hermes Decky Loader Plugin v2.3.0** transforms your Quick Access Menu (`...` button) into an in-game AI command center organized across 4 tabs:
+
+| Tab | Features & Capabilities | Handheld Action |
 | :--- | :--- | :--- |
-| **Steam Library Shortcut** | Injects Hermes into Steam with custom Grid, Banner, Hero, and Logo artwork. | Appears in your Steam Library under **Non-Steam Games**. |
-| **Official Controller Profile** | Left Trackpad Radial Menu for instant Hermes commands; Right Trackpad mouse; L4/R4 paddles for Voice & Keyboard. | Automatically applied to the Hermes Steam shortcut. |
-| **Decky Loader QAM Plugin** | Overlays Hermes in the Quick Access Menu (`...` button) over running games. | Press `...` button during any game > select **Hermes Assistant**. |
-| **Adaptive Dual-Tier AI** | Automatically monitors `gamescope`: drops to **Qwen 2.5 3B** (~2GB RAM) while gaming; scales to **Qwen 2.5 7B** when idle. | Fully automated background systemd user service. |
-| **Paddle Push-to-Talk** | Hold back paddle (L4/R4) to dictate speech; transcribes via **Faster-Whisper** and speaks back via **Piper Neural TTS**. | Run `hermes-voice-listener` or bind to paddle via Steam Input. |
-| **SteamOS Ops Toolkit** | Autonomous skills for ProtonDB fixes, cleaning orphaned prefixes, and save backups. | Ask Hermes: *"Fix Cyberpunk with ProtonDB"*, *"Clean unused compatdata"*. |
+| **💬 Assistant** | Live conversational chat, Push-to-Talk mic button, contextual suggestion chips (*"Boss Strategy"*, *"Boost FPS"*, *"Check Battery"*), and background SteamOS Toast alerts. | Type or dictate queries while staying in your game. |
+| **🎮 Game Ops** | Auto-detects running Steam game AppID & title, queries live **ProtonDB ratings** (*Platinum, Gold, Silver, Bronze, Borked*), applies recommended launch flags in 1 click, and powers an in-game walkthrough assistant. | Tap **⚡ 1-Click Apply Recommended Flags** to fix game stutters instantly. |
+| **🛠️ Dev Station** | 1-click handheld toggles for **code-server (VS Code)** (displaying LAN URL and access token) and **SSH Daemon** (Port 2222), alongside a live APU thermal (°C), wattage draw, and RAM telemetry strip. | Tap toggle to turn your Deck into a remote development station. |
+| **⚙️ Setup** | Universal model switcher: switch between **Claude 3.5 Sonnet/Haiku** (DirectSDK), **OpenAI Codex** (OAuth), and **Local Vulkan 3B/7B** (Offline), with **Piper Neural TTS** speech toggles and auto-offline fallback. | Switch AI engines on the fly without restarting games. |
+
+---
 
 ### 🎮 Steam Input Handheld Mapping
 

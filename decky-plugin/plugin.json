@@ -1,7 +1,7 @@
 {
-  "name": "Hermes Assistant",
+  "name": "Hermes Command Center",
   "author": "khaoticdev62",
   "flags": ["root"],
-  "description": "AI Assistant for SteamOS Gaming Mode — Quick prompt overlay, ProtonDB fixes, and battery telemetry.",
-  "version": "1.0.0"
+  "description": "Handheld AI command center for SteamOS — Streaming chat, active game auto-detection, ProtonDB 1-click fixes, and Dev Station controls.",
+  "version": "2.3.0"
 }

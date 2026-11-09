@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-#  Hermes Agent Steam Deck Ultimate Developer & Gaming Edition v2.2.0
+#  Hermes Agent Steam Deck Ultimate Developer & Gaming Edition v2.3.0
 #  Target OS: SteamOS 3.x (Arch-based Linux, immutable rootfs friendly)
 # ==============================================================================
 
@@ -8,7 +8,7 @@ set -u
 
 REPO_OWNER="khaoticdev62"
 REPO_NAME="hermes-steamdeck-installer"
-SCRIPT_VERSION="2.2.0"
+SCRIPT_VERSION="2.3.0"
 
 LOG_DIR="${HOME}/.local/share/hermes-installer"
 LOG_FILE="${LOG_DIR}/installer.log"

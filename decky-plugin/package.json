@@ -1,12 +1,13 @@
 {
   "name": "hermes-decky",
-  "version": "1.0.0",
-  "description": "Hermes Agent Decky Loader Plugin",
+  "version": "2.3.0",
+  "description": "Handheld AI command center for SteamOS Gaming Mode",
   "scripts": {
     "build": "decky-frontend-lib build"
   },
   "dependencies": {
-    "@decky/ui": "^5.0.0"
+    "@decky/ui": "^5.0.0",
+    "react-icons": "^4.12.0"
   },
   "devDependencies": {
     "@decky/frontend-lib": "^4.0.0",
