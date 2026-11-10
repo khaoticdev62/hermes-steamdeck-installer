@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HermDeck Installer — Raspberry Pi 5 First-Time Setup</title>
+<style>
+  :root {
+    --pi-bg: #0b0f17;
+    --pi-panel: #131c2a;
+    --pi-card: #1c2738;
+    --pi-card-border: rgba(255, 255, 255, 0.08);
+    --pi-ruby: #c51a4a;
+    --pi-ruby-glow: rgba(197, 26, 74, 0.4);
+    --pi-emerald: #10b981;
+    --pi-amber: #f59e0b;
+    --pi-cyan: #38bdf8;
+    --pi-text: #ffffff;
+    --pi-subtext: #94a3b8;
+    --pi-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+
+  body {
+    width: 1280px;
+    height: 800px;
+    background: var(--pi-bg);
+    color: var(--pi-text);
+    font-family: var(--pi-font);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Ambient Vignette & Blueprint Lines */
+  .vignette-bg {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at 20% 20%, rgba(197, 26, 74, 0.14), transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.08), transparent 50%),
+                #0b0f17;
+    z-index: 1;
+  }
+
+  .blueprint-grid {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 2;
+  }
+
+  /* Header */
+  header {
+    height: 60px;
+    background: rgba(19, 28, 42, 0.95);
+    border-bottom: 1px solid var(--pi-card-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    z-index: 10;
+  }
+
+  .brand-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .pi-logo {
+    width: 32px;
+    height: 32px;
+    background: var(--pi-ruby);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 18px;
+    color: #fff;
+    box-shadow: 0 0 14px var(--pi-ruby-glow);
+  }
+
+  .brand-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #fff;
+  }
+
+  .brand-subtitle {
+    font-size: 12px;
+    color: var(--pi-subtext);
+  }
+
+  .system-meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 13px;
+    color: var(--pi-subtext);
+  }
+
+  .badge-verified {
+    background: rgba(197, 26, 74, 0.15);
+    border: 1px solid var(--pi-ruby);
+    color: #ff4b7b;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Main Wizard Layout */
+  main {
+    flex: 1;
+    display: flex;
+    padding: 32px;
+    gap: 28px;
+    z-index: 10;
+  }
+
+  /* Left Panel: Pi 5 Hardware Profile */
+  .left-panel {
+    flex: 1.1;
+    background: rgba(19, 28, 42, 0.85);
+    border: 1px solid var(--pi-card-border);
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+  }
+
+  .panel-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .board-diagram {
+    background: #0f1622;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    margin: 16px 0;
+  }
+
+  .board-pcb {
+    width: 320px;
+    height: 140px;
+    background: #0f3d2e;
+    border: 2px solid #10b981;
+    border-radius: 10px;
+    position: relative;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .soc-chip {
+    width: 70px;
+    height: 70px;
+    background: #232d3d;
+    border: 1px solid #94a3b8;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: #fff;
+    font-weight: 700;
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.8);
+  }
+
+  .rp1-chip {
+    width: 36px;
+    height: 36px;
+    background: #182230;
+    border: 1px solid #64748b;
+    border-radius: 2px;
+    position: absolute;
+    bottom: 16px;
+    right: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    color: #38bdf8;
+    font-weight: bold;
+  }
+
+  .gpio-header-vis {
+    width: 250px;
+    height: 12px;
+    position: absolute;
+    top: 8px;
+    left: 20px;
+    background: #000;
+    border-radius: 2px;
+    display: flex;
+    gap: 4px;
+    padding: 2px 4px;
+  }
+  .pin-dot { width: 4px; height: 4px; background: #cfb53b; border-radius: 50%; }
+
+  .telemetry-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .telemetry-card {
+    background: #16202e;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .telemetry-card .lbl { font-size: 11px; color: var(--pi-subtext); }
+  .telemetry-card .val { font-size: 15px; font-weight: 700; color: #38bdf8; margin-top: 2px; }
+
+  /* Right Panel: Stepper & Pipeline */
+  .right-panel {
+    flex: 1.4;
+    background: rgba(19, 28, 42, 0.85);
+    border: 1px solid var(--pi-card-border);
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+  }
+
+  .stepper-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+    overflow-y: auto;
+  }
+
+  .step-card {
+    background: var(--pi-card);
+    border: 1px solid var(--pi-card-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .step-card.active {
+    border-color: var(--pi-ruby);
+    box-shadow: 0 0 14px var(--pi-ruby-glow);
+    transform: scale(1.01);
+  }
+
+  .step-card.done {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.06);
+  }
+
+  .step-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .step-card.done .step-icon {
+    background: var(--pi-emerald);
+    color: #000;
+  }
+
+  .step-card.active .step-icon {
+    background: var(--pi-ruby);
+    color: #fff;
+    box-shadow: 0 0 8px var(--pi-ruby-glow);
+  }
+
+  .step-details { flex: 1; }
+  .step-name { font-size: 14px; font-weight: 700; color: #fff; }
+  .step-desc { font-size: 11px; color: var(--pi-subtext); margin-top: 2px; }
+
+  .action-row {
+    display: flex;
+    gap: 14px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--pi-card-border);
+  }
+
+  .btn-primary {
+    flex: 2;
+    background: linear-gradient(90deg, #c51a4a, #991b3b);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 20px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 18px var(--pi-ruby-glow);
+    transition: all 0.15s ease-out;
+  }
+  .btn-primary:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 24px rgba(197, 26, 74, 0.6);
+  }
+
+  .btn-secondary {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.08);
+    color: #cbd5e1;
+    border: 1px solid var(--pi-card-border);
+    border-radius: 8px;
+    padding: 14px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  footer {
+    height: 48px;
+    background: rgba(11, 15, 23, 0.95);
+    border-top: 1px solid var(--pi-card-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    font-size: 12px;
+    color: var(--pi-subtext);
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+
+  <div class="vignette-bg"></div>
+  <div class="blueprint-grid"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="brand-group">
+      <div class="pi-logo">🍓</div>
+      <div>
+        <div class="brand-title">Raspberry Pi 5 First-Time Setup — HermDeck Suite</div>
+        <div class="brand-subtitle">v3.2.0 Edge AI & Physical Computing Edition • PEP 668 User-Space</div>
+      </div>
+    </div>
+    <div class="system-meta">
+      <span>📶 Gigabit LAN / Wi-Fi 5</span>
+      <span>⚡ Active Cooler: 1800 RPM (Quiet)</span>
+      <span class="badge-verified">PI 5 OPTIMIZED</span>
+    </div>
+  </header>
+
+  <!-- Main Body -->
+  <main>
+    <!-- Left Panel: Pi 5 Hardware Profile -->
+    <div class="left-panel">
+      <div>
+        <div class="panel-title">
+          <span>🍓</span> Raspberry Pi 5 Hardware Profile
+        </div>
+        <p style="font-size:12px; color:var(--pi-subtext); margin-top:4px;">
+          Broadcom BCM2712 Quad-Core Arm Cortex-A76 @ 2.4GHz • RP1 Southbridge
+        </p>
+      </div>
+
+      <div class="board-diagram">
+        <div class="board-pcb">
+          <div class="gpio-header-vis">
+            <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+            <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+            <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+          </div>
+          <div class="soc-chip">
+            <div>BCM2712</div>
+            <div style="font-size:7px; color:#10b981; margin-top:2px;">CORTEX-A76</div>
+          </div>
+          <div class="rp1-chip">RP1</div>
+        </div>
+        <div style="font-size:11px; color:#94a3b8; text-align:center;">
+          40-Pin GPIO Header & Active Cooler Thermal Sync Armed
+        </div>
+      </div>
+
+      <div class="telemetry-row">
+        <div class="telemetry-card">
+          <div class="lbl">SoC Temperature</div>
+          <div class="val" style="color:#10b981;">46.8°C • Optimal</div>
+        </div>
+        <div class="telemetry-card">
+          <div class="lbl">ARM NEON Acceleration</div>
+          <div class="val">Enabled (ASIMD)</div>
+        </div>
+        <div class="telemetry-card">
+          <div class="lbl">Memory Headroom</div>
+          <div class="val">6.2 GB / 8.0 GB</div>
+        </div>
+        <div class="telemetry-card">
+          <div class="lbl">RP1 GPIO Controller</div>
+          <div class="val" style="font-size:13px; color:#cbd5e1;">pinctrl / gpiozero</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel: Stepper & Pipeline -->
+    <div class="right-panel">
+      <div class="panel-title">
+        <span>🚀</span> Automated Deployment Pipeline
+      </div>
+
+      <div class="stepper-list">
+        <div class="step-card done">
+          <div class="step-icon">✓</div>
+          <div class="step-details">
+            <div class="step-name">1. ARM64 Environment & PEP 668 User Venv</div>
+            <div class="step-desc">Configured isolated user environment at ~/.hermes/venv without modifying system packages.</div>
+          </div>
+        </div>
+
+        <div class="step-card done">
+          <div class="step-icon">✓</div>
+          <div class="step-details">
+            <div class="step-name">2. AI Cloud Subscriptions & Codex OAuth</div>
+            <div class="step-desc">Configured Claude DirectSDK subscription plugin and OpenAI Codex authentication.</div>
+          </div>
+        </div>
+
+        <div class="step-card active">
+          <div class="step-icon">3</div>
+          <div class="step-details">
+            <div class="step-name">3. ARM Cortex-A76 NEON Local Edge AI Engine</div>
+            <div class="step-desc">Deploying llama.cpp NEON dotprod with Llama 3.2 1B (~15 t/s) and 3B edge models.</div>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-icon">4</div>
+          <div class="step-details">
+            <div class="step-name">4. RP1 40-Pin GPIO & Physical Computing Lab</div>
+            <div class="step-desc">Installing rpi-hardware skill, pinctrl, I2C sensor diagnostics, and fan telemetry helpers.</div>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-icon">5</div>
+          <div class="step-details">
+            <div class="step-name">5. Remote Developer Studio (code-server & SSH)</div>
+            <div class="step-desc">Enabling browser-based VS Code on port 18888 with secure token authentication.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-primary" onclick="triggerInstall()">
+          <span>⚡</span> BEGIN 1-CLICK PI 5 INSTALLATION
+        </button>
+        <button class="btn-secondary" onclick="alert('Open LXTerminal and run ./install-hermdeck-pi5.sh for interactive TUI.')">
+          Terminal TUI
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div>Raspberry Pi OS (Bookworm 64-bit) • Official Pi 5 Compatible</div>
+    <div>HermDeck Installer v3.2.0 • Edge AI & IoT Station</div>
+  </footer>
+
+  <script>
+    function triggerInstall() {
+      alert("Launching HermDeck Pi 5 Automated Pipeline (v3.2.0)... Check terminal window for live logs.");
+    }
+  </script>
+
+</body>
+</html>

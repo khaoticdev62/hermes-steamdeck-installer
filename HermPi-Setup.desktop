@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=HermDeck Pi 5 Setup (v3.2.0)
+Comment=Automated Edge AI & Physical Computing Setup for Raspberry Pi 5
+Exec=lxterminal -e bash -c "\"$HOME/install-hermdeck-pi5.sh\""
+Icon=raspberry-pi
+Terminal=false
+Type=Application
+Categories=Development;System;
+StartupNotify=true

@@ -1,31 +1,43 @@
-# ☤ HermDeck Installer — Steam Deck Ultimate Edition (v3.0.0 AAA)
+# ☤ HermDeck Installer — Steam Deck & Raspberry Pi 5 Suite (v3.2.0 AAA)
 
 <div align="center">
 
 [![Release](https://img.shields.io/github/v/release/khaoticdev62/hermes-steamdeck-installer?color=blue&style=for-the-badge)](https://github.com/khaoticdev62/hermes-steamdeck-installer/releases/latest)
 [![Steam Deck Verified](https://img.shields.io/badge/Steam%20Deck-VERIFIED-gold?style=for-the-badge&logo=steam)](https://github.com/khaoticdev62/hermes-steamdeck-installer)
-[![SteamOS](https://img.shields.io/badge/Platform-SteamOS%203.x%20Holo-0078d7?style=for-the-badge&logo=linux)](https://store.steampowered.com/steamos)
+[![Raspberry Pi 5](https://img.shields.io/badge/Raspberry%20Pi-5%20Optimized-c51a4a?style=for-the-badge&logo=raspberrypi)](README.md)
+[![SteamOS](https://img.shields.io/badge/Platform-SteamOS%203.x%20%7C%20Debian%2012-0078d7?style=for-the-badge&logo=linux)](README.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 [![No Sudo Required](https://img.shields.io/badge/Rootless-100%25%20Home--Dir-orange?style=for-the-badge)](README.md)
-[![Handheld Ready](https://img.shields.io/badge/Handheld-1280x800%20AAA-blueviolet?style=for-the-badge)](README.md)
 
-**Turn your Steam Deck into an official Valve-grade autonomous handheld AI companion and portable development workstation with HermDeck Installer.**
+**Turn your Steam Deck or Raspberry Pi 5 into an official Valve-grade autonomous AI companion and portable development workstation with HermDeck Installer.**
 
-[Quick Start](#-quick-start-30-seconds) • [Setup Wizard](#-steamos-first-time-setup-wizard) • [Gaming Mode & Decky](#-gaming-mode-companion--decky-command-center) • [Developer Studio](#-developer-studio-suite) • [Handheld Mapping](#-steam-input-handheld-mapping) • [Clean Uninstaller](#-clean-uninstaller--storage-pruning)
+[Steam Deck Quick Start](#-quick-start-steam-deck) • [Raspberry Pi 5 Quick Start](#-quick-start-raspberry-pi-5) • [Pi 5 Edition](#-raspberry-pi-5-edition-edge-ai--physical-computing) • [Setup Wizard](#-steamos-first-time-setup-wizard-aaa-experience) • [Decky Hub](#-gaming-mode-companion--decky-command-center) • [Developer Studio](#-developer-studio-suite)
 
 ---
 
 </div>
 
-## 🚀 Quick Start (30 Seconds)
+## 🚀 Quick Start: Steam Deck (30 Seconds)
 
-Switch your Steam Deck to **Desktop Mode** (*Steam Button > Power > Switch to Desktop*), open **Konsole**, and paste this single command:
+Switch your Steam Deck to **Desktop Mode** (*Steam Button > Power > Switch to Desktop*), open **Konsole**, and run:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/khaoticdev62/hermes-steamdeck-installer/main/install-hermdeck.sh | bash
 ```
 
-> **Prefer a pre-packaged tarball?** Download [`hermdeck-steamdeck.tar.gz`](https://github.com/khaoticdev62/hermes-steamdeck-installer/releases/latest/download/hermdeck-steamdeck.tar.gz) (or `hermes-steamdeck.tar.gz`), extract it with `tar -xzf hermdeck-steamdeck.tar.gz`, and run `./install-hermdeck.sh`.
+> **Universal Auto-Detection:** `install-hermdeck.sh` detects whether your hardware is an `x86_64` Steam Deck or an `aarch64` Raspberry Pi 5 automatically!
+
+---
+
+## 🍓 Quick Start: Raspberry Pi 5 (30 Seconds)
+
+On your Raspberry Pi 5 (Raspberry Pi OS Bookworm 64-bit), open **Terminal**, and run:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/khaoticdev62/hermes-steamdeck-installer/main/install-hermdeck-pi5.sh | bash
+```
+
+> **Prefer a pre-packaged tarball?** Download [`hermdeck-pi5.tar.gz`](https://github.com/khaoticdev62/hermes-steamdeck-installer/releases/latest/download/hermdeck-pi5.tar.gz), extract it with `tar -xzf hermdeck-pi5.tar.gz`, and run `./install-hermdeck-pi5.sh`.
 
 ---
 
@@ -43,6 +55,27 @@ Experience a native setup process matching official SteamOS system menus:
 - ⚡ **1-Click Automated Pipeline:** Deploys Claude DirectSDK, Codex OAuth, Vulkan offline models, Steam Input controller profiles, and Decky plugins with zero manual configuration.
 - 🔊 **Steam Audio UI Cues:** Synthesizes authentic Valve navigation clicks, focus tones, and major triad completion chimes via zero-dependency Web Audio oscillators.
 - 💻 **Dual-Layer Architecture:** Launch via Desktop shortcut or browser, or drop down to the enhanced 24-bit TrueColor Steam Big Picture TUI in Konsole anytime.
+
+---
+
+## 🍓 Raspberry Pi 5 Edition (Edge AI & Physical Computing Lab)
+
+<div align="center">
+
+![Raspberry Pi 5 First-Time Setup Wizard](docs/screenshots/setup-wizard-pi5.png)
+*HermDeck Pi 5 Setup Wizard running on Raspberry Pi OS (Bookworm 64-bit), featuring Broadcom BCM2712 Cortex-A76 telemetry, RP1 Southbridge GPIO mapping, and ARM NEON edge model deployment.*
+
+</div>
+
+Transform your **Raspberry Pi 5** into a self-contained autonomous Edge AI station and physical computing development lab:
+
+| Pi 5 Feature | Technical Capability | Edge Benefit |
+| :--- | :--- | :--- |
+| **ARM NEON Cortex-A76 AI** | Optimized `llama.cpp` using Arm NEON & ASIMD dotprod vector instructions with **Llama 3.2 1B** (~15 tokens/sec) and **3B** (~9 tokens/sec) edge models. | Offline autonomous edge intelligence with low memory footprint (~800MB–2GB RAM). |
+| **RP1 40-Pin GPIO Skill** | Integrated `rpi-hardware` autonomous skill controlling pins via `pinctrl` and `gpiozero`, with I2C sensor auto-detection (`i2cdetect -y 1`). | Ask Hermes: *"Read temperature from BME280 sensor"*, *"Pulse GPIO 17 LED"*, or *"Debug SPI bus"*. |
+| **Active Cooler Telemetry** | Monitors SoC temperatures in real-time (`hermpi-temp`) and checks Active Cooler PWM fan speeds (`hermpi-fan`). | Prevents thermal throttling during continuous AI code generation or builds. |
+| **PEP 668 User-Space Safe** | Installs cleanly into `~/.hermes/venv` without violating Debian 12 Bookworm's `EXTERNALLY-MANAGED` package safety rule. | Zero risk of breaking system Python or apt dependencies. |
+| **Remote Dev Station** | Automated browser-based VS Code (`code-server`) on port 18888 with password protection and SSH daemon pairing. | Develop on your Pi 5 from any iPad, laptop, or browser on your local network. |
 
 ---
 
